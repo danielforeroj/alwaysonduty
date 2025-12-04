@@ -131,7 +131,7 @@ export default function LandingPage() {
           </SecondaryButton>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {useCases.map((item) => (
+          {useCases.slice(0, 6).map((item) => (
             <div
               key={item.slug}
               className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm transition hover:-translate-y-1 hover:border-onDutyNavy hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
@@ -139,9 +139,9 @@ export default function LandingPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{item.icon}</span>
-                  <h3 className="text-lg font-semibold text-onDutyNavy dark:text-white">{item.title}</h3>
+                  <h3 className="text-lg font-semibold text-onDutyNavy dark:text-white">{item.label}</h3>
                 </div>
-                <p className="text-sm text-slate-600 dark:text-slate-300">{item.description}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">{item.primaryBenefit}</p>
               </div>
               <Link
                 href={`/use-cases/${item.slug}`}
