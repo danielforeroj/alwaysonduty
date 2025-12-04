@@ -41,8 +41,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleLanguage = useCallback(() => {
-    setLanguage((prev) => (prev === "en" ? "es" : "en"));
-  }, [setLanguage]);
+    const nextLanguage: SupportedLanguage = language === "en" ? "es" : "en";
+    setLanguage(nextLanguage);
+  }, [language, setLanguage]);
 
   const value = useMemo(
     () => ({ language, setLanguage, toggleLanguage }),
