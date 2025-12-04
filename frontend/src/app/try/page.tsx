@@ -14,8 +14,15 @@ export default function TryPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [configError, setConfigError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!API_BASE) {
+      console.error("NEXT_PUBLIC_API_BASE_URL is not set. Cannot send chat messages.");
+      setConfigError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
+
     const existing = localStorage.getItem("on_duty_session_id");
     if (existing) {
       setSessionId(existing);
@@ -27,13 +34,20 @@ export default function TryPage() {
   }, []);
 
   const sendMessage = async () => {
+    if (configError) return;
+    const base = API_BASE;
+    if (!base) {
+      setConfigError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
+
     if (!input.trim() || !sessionId) return;
     const userMsg: ChatMessage = { role: "user", text: input };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/webchat/send`, {
+      const res = await fetch(`${base}/api/webchat/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -58,6 +72,7 @@ export default function TryPage() {
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">Try our agent</h1>
         <p className="text-slate-600">Chat with a demo assistant. Responses are stubbed for now.</p>
+        {configError && <p className="mt-3 text-sm text-red-600">{configError}</p>}
       </div>
 
       <div className="rounded-2xl bg-white p-6 shadow-sm">
@@ -79,10 +94,11 @@ export default function TryPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message"
+            disabled={!!configError}
           />
           <button
             onClick={sendMessage}
-            disabled={loading}
+            disabled={loading || !!configError}
             className="rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-50"
           >
             Send

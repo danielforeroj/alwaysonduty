@@ -9,12 +9,21 @@ export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
+  const [configError, setConfigError] = useState<string | null>(
+    API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
+  );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    const base = API_BASE;
+    if (!base) {
+      console.error("NEXT_PUBLIC_API_BASE_URL is not set. Cannot log in.");
+      setConfigError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
+      const res = await fetch(`${base}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -55,8 +64,13 @@ export default function LoginPage() {
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
         </div>
+        {configError && <p className="text-sm text-red-600">{configError}</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <button type="submit" className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700">
+        <button
+          type="submit"
+          disabled={!!configError}
+          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-50"
+        >
           Log in
         </button>
       </form>

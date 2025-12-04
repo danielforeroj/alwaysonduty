@@ -24,3 +24,9 @@ Next.js + Tailwind app for the OnDuty SaaS experience.
 - Signup: `/signup`
 - Login: `/login`
 - Dashboard (requires token in localStorage): `/dashboard`
+
+## Deploying on Vercel
+- Set the project root directory to `frontend`.
+- Configure the environment variable in Vercel:
+  - `NEXT_PUBLIC_API_BASE_URL` pointing to your public backend URL (e.g., `https://your-backend.example.com`).
+- Redeploy to propagate the new configuration.
