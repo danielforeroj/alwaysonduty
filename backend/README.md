@@ -41,3 +41,4 @@ GET /health -> {"status": "ok"}
 ## Notes
 - JWT settings and database URLs are only loaded from environment variables; no secrets are committed.
 - The demo webchat endpoint returns a stubbed AI reply for now.
+- Dependencies pin Pydantic below version 2 to match the current settings import style.
