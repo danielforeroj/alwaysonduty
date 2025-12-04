@@ -22,6 +22,9 @@ export default function DashboardPage() {
   const [tenant, setTenant] = useState<TenantInfo | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [configError, setConfigError] = useState<string | null>(
+    API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
+  );
 
   useEffect(() => {
     const token = localStorage.getItem("on_duty_token");
@@ -30,16 +33,24 @@ export default function DashboardPage() {
       return;
     }
 
+    const base = API_BASE;
+    if (!base) {
+      console.error("NEXT_PUBLIC_API_BASE_URL is not set. Dashboard cannot fetch data.");
+      setConfigError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
-        const meRes = await fetch(`${API_BASE}/api/auth/me`, {
+        const meRes = await fetch(`${base}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!meRes.ok) throw new Error("Unauthorized");
         const meData = await meRes.json();
         setTenant(meData.tenant);
 
-        const convoRes = await fetch(`${API_BASE}/api/conversations`, {
+        const convoRes = await fetch(`${base}/api/conversations`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (convoRes.ok) {
@@ -58,6 +69,10 @@ export default function DashboardPage() {
 
   if (loading) {
     return <p>Loading dashboard...</p>;
+  }
+
+  if (configError) {
+    return <p className="text-red-600">{configError}</p>;
   }
 
   return (
