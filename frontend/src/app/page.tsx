@@ -25,14 +25,41 @@ const copy = {
     ],
     heroMessages: [
       {
-        author: "Agent Nova",
-        tone: "neutral",
-        text: "We need a last-minute booking for tomorrow night. Can you help?",
+        author: "Agent",
+        avatar: "🤖",
+        align: "left",
+        text: "Hi, I'm Nova. Staff member at Hotel XYZ. How can I help?",
       },
       {
-        author: "Guest",
-        tone: "accent",
-        text: "Absolutely! I can reserve a queen suite for tomorrow with late check-in. Should I confirm under your name?",
+        author: "Maria",
+        avatar: "👩",
+        align: "right",
+        text: "Hi, I need a last-minute table for two tonight at 8pm. Can you help?",
+      },
+      {
+        author: "Agent",
+        avatar: "🤖",
+        align: "left",
+        text: "Absolutely! I have a table available at the terrace. Should I confirm under your name?",
+      },
+      {
+        author: "Maria",
+        avatar: "👩",
+        align: "right",
+        text: "Yes, please",
+      },
+      {
+        author: "Agent",
+        avatar: "🤖",
+        align: "left",
+        text:
+          "Fantastic, you should've received an email with your reservation details. See you at 8pm tonight. Hope you enjoy dinner!",
+      },
+      {
+        author: "Maria",
+        avatar: "👩",
+        align: "right",
+        text: "Just did, Thanks!",
       },
     ],
     howTitle: "How OnDuty works",
@@ -284,14 +311,41 @@ const copy = {
     ],
     heroMessages: [
       {
-        author: "Agente Nova",
-        tone: "neutral",
-        text: "Veo una reserva de varias noches para mañana por la noche. ¿Quieres que la bloquee?",
+        author: "Agente",
+        avatar: "🤖",
+        align: "left",
+        text: "Hola, soy Nova. Soy del Restaurante XYZ. Cómo te puedo ayudar?",
       },
       {
-        author: "Huésped",
-        tone: "accent",
-        text: "¡Claro! Puedo reservar una suite con cama queen para mañana con llegada tardía. ¿Debería confirmarla a tu nombre?",
+        author: "María",
+        avatar: "👩",
+        align: "right",
+        text: "Hola, necesito una mesa de última hora para dos esta noche a las 8pm. Puedes ayudarme?",
+      },
+      {
+        author: "Agente",
+        avatar: "🤖",
+        align: "left",
+        text: "¡Por supuesto! Tengo una mesa disponible en la terraza. ¿Te confirmo a tu nombre?",
+      },
+      {
+        author: "María",
+        avatar: "👩",
+        align: "right",
+        text: "Sí, por favor.",
+      },
+      {
+        author: "Agente",
+        avatar: "🤖",
+        align: "left",
+        text:
+          "¡Genial! Deberías haber recibido un correo electrónico con los detalles de tu reserva. Nos vemos esta noche a las 8pm. ¡Espero que disfrutes de la cena!",
+      },
+      {
+        author: "María",
+        avatar: "👩",
+        align: "right",
+        text: "Acabo de recibirlo. Gracias!",
       },
     ],
     howTitle: "Cómo funciona OnDuty",
@@ -612,15 +666,29 @@ export default function LandingPage() {
                 </div>
 
                 <div className="mt-6 space-y-3 rounded-2xl border border-slate-200/80 bg-gradient-to-r from-slate-50 to-white p-4 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/80">
-                  {c.heroMessages.map((message, idx) => (
-                    <div key={message.text} className="flex items-start gap-3">
-                      <div className={`mt-1 h-2 w-2 rounded-full ${idx === 0 ? "bg-slate-400" : "bg-onDutyGold"}`} aria-hidden />
-                      <div className={`${message.tone === "accent" ? "rounded-2xl bg-emerald-50 p-3 text-onDutyNavy shadow-sm dark:bg-emerald-900/30" : "rounded-2xl bg-slate-50 p-3 shadow-sm dark:bg-slate-800/60"}`}>
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-300">{message.author}</p>
-                        <p className="text-sm text-slate-700 dark:text-slate-200">{message.text}</p>
+                  {c.heroMessages.map((message) => {
+                    const isRight = message.align === "right";
+                    return (
+                      <div
+                        key={`${message.author}-${message.text}`}
+                        className={`flex w-full items-start gap-3 ${isRight ? "flex-row-reverse" : ""}`}
+                      >
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-lg shadow-inner dark:bg-slate-800">
+                          <span aria-hidden>{message.avatar}</span>
+                        </div>
+                        <div
+                          className={`max-w-[85%] rounded-2xl border p-3 text-left shadow-sm ${
+                            isRight
+                              ? "border-emerald-100 bg-emerald-50 text-onDutyNavy dark:border-emerald-800/60 dark:bg-emerald-900/30"
+                              : "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700/60 dark:bg-slate-800/60 dark:text-slate-100"
+                          }`}
+                        >
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-300">{message.author}</p>
+                          <p className="text-sm text-slate-700 dark:text-slate-100">{message.text}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
