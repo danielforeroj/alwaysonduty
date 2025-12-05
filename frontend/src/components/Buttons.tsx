@@ -21,7 +21,7 @@ const primaryClasses =
 const secondaryClasses =
   [
     "border border-onDutyNavy text-onDutyNavy hover:bg-onDutyNavy hover:text-white",
-    "dark:border-transparent dark:bg-onDutyGold dark:text-onDutyNavy dark:hover:bg-transparent dark:hover:text-onDutyGold dark:hover:border-onDutyGold",
+    "dark:border-onDutyGold dark:text-onDutyGold dark:bg-transparent dark:hover:bg-onDutyGold dark:hover:text-onDutyNavy",
   ].join(" ");
 
 function classNames(...classes: Array<string | undefined>) {
