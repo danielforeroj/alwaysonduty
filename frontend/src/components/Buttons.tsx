@@ -19,7 +19,10 @@ const primaryClasses =
   ].join(" ");
 
 const secondaryClasses =
-  "border border-onDutyNavy text-onDutyNavy hover:bg-onDutyNavy hover:text-white";
+  [
+    "border border-onDutyNavy text-onDutyNavy hover:bg-onDutyNavy hover:text-white",
+    "dark:border-transparent dark:bg-onDutyGold dark:text-onDutyNavy dark:hover:bg-transparent dark:hover:text-onDutyGold dark:hover:border-onDutyGold",
+  ].join(" ");
 
 function classNames(...classes: Array<string | undefined>) {
   return classes.filter(Boolean).join(" ");
