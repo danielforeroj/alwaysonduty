@@ -616,13 +616,13 @@ export default function LandingPage() {
   return (
     <div className="space-y-28 pb-16 px-4 sm:px-6 lg:px-8 md:space-y-36">
       {/* Hero */}
-      <section className="pt-10 pb-16 md:pt-14 md:pb-24 lg:min-h-[75vh]">
+      <section className="pt-6 pb-12 md:pt-8 md:pb-16 lg:min-h-[calc(100vh-96px)]">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-100 via-white to-slate-50 shadow-xl dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-950">
           <div className="absolute inset-0 opacity-60">
             <div className="absolute left-8 top-10 h-32 w-32 rounded-full bg-onDutyGold/40 blur-3xl" />
             <div className="absolute bottom-10 right-12 h-48 w-48 rounded-full bg-onDutyWine/35 blur-3xl" />
           </div>
-          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:px-10">
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:px-10">
             <div className="text-onDutyNavy dark:text-white">
               <div className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
                 {lang === "en" ? "Always-on AI agents" : "Always-on AI agents"}
@@ -673,21 +673,28 @@ export default function LandingPage() {
                     return (
                       <div
                         key={`${message.author}-${message.text}`}
-                        className={`flex w-full items-start gap-3 ${isRight ? "flex-row-reverse" : ""}`}
+                        className={`flex w-full items-start gap-3 ${isRight ? "justify-end" : "justify-start"}`}
                       >
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-lg shadow-inner dark:bg-slate-800">
-                          <span aria-hidden>{message.avatar}</span>
-                        </div>
+                        {!isRight && (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-lg shadow-inner dark:bg-slate-800">
+                            <span aria-hidden>{message.avatar}</span>
+                          </div>
+                        )}
                         <div
-                          className={`max-w-[85%] rounded-2xl border p-3 text-left shadow-sm ${
+                          className={`max-w-[82%] rounded-2xl border p-3 text-left shadow-sm ${
                             isRight
-                              ? "border-emerald-100 bg-emerald-50 text-onDutyNavy dark:border-emerald-800/60 dark:bg-emerald-900/30"
+                              ? "ml-auto border-emerald-100 bg-emerald-50 text-onDutyNavy dark:border-emerald-800/60 dark:bg-emerald-900/30"
                               : "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700/60 dark:bg-slate-800/60 dark:text-slate-100"
                           }`}
                         >
-                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-300">{message.author}</p>
-                          <p className="text-[13px] text-slate-700 md:text-sm dark:text-slate-100">{message.text}</p>
+                          <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-300">{message.author}</p>
+                          <p className="text-[12px] text-slate-700 sm:text-[13px] md:text-sm dark:text-slate-100">{message.text}</p>
                         </div>
+                        {isRight && (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-lg shadow-inner dark:bg-slate-800">
+                            <span aria-hidden>{message.avatar}</span>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
