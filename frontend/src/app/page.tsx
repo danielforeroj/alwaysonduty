@@ -16,6 +16,52 @@ const copy = {
     heroPrimaryCtaTry: "Try our agent",
     heroPrimaryCtaSignup: "Sign up for free",
     heroSecondaryLink: "See use cases",
+    heroRealtime: "Realtime responses",
+    heroOnline: "Online",
+    heroMetrics: [
+      { label: "Clients served", value: "1,569", helper: "" },
+      { label: "Conversations", value: "258 of 800", helper: "" },
+      { label: "Client sentiment", value: "😊", helper: "" },
+    ],
+    heroMessages: [
+      {
+        author: "Agent",
+        avatar: "🤖",
+        align: "left",
+        text: "Hi, I'm Nova. Staff member at Hotel XYZ. How can I help?",
+      },
+      {
+        author: "Maria",
+        avatar: "👩",
+        align: "right",
+        text: "Hi, I need a last-minute table for two tonight at 8pm. Can you help?",
+      },
+      {
+        author: "Agent",
+        avatar: "🤖",
+        align: "left",
+        text: "Absolutely! I have a table available at the terrace. Should I confirm under your name?",
+      },
+      {
+        author: "Maria",
+        avatar: "👩",
+        align: "right",
+        text: "Yes, please",
+      },
+      {
+        author: "Agent",
+        avatar: "🤖",
+        align: "left",
+        text:
+          "Fantastic, you should've received an email with your reservation details. See you at 8pm tonight. Hope you enjoy dinner!",
+      },
+      {
+        author: "Maria",
+        avatar: "👩",
+        align: "right",
+        text: "Just did, Thanks!",
+      },
+    ],
     howTitle: "How OnDuty works",
     howSteps: [
       {
@@ -250,12 +296,58 @@ const copy = {
     finalCtaSecondary: "Sign up for free",
   },
   es: {
-    heroTitle: "AI sales & support that never clock out.",
+    heroTitle: "Ventas y soporte con IA que nunca terminan.",
     heroSubtitle:
-      "OnDuty connects to your web, WhatsApp, and Telegram channels to handle leads, bookings, and customer questions 24/7—without adding headcount.",
-    heroPrimaryCtaTry: "Probar el agente",
+      "OnDuty se conecta a tus canales web, WhatsApp y Telegram para gestionar leads, reservas y consultas de clientes 24/7, sin necesidad de añadir personal.",
+    heroPrimaryCtaTry: "Prueba a nuestro agente",
     heroPrimaryCtaSignup: "Crear mi cuenta gratis",
     heroSecondaryLink: "Ver casos de uso",
+    heroRealtime: "Interacción en directo",
+    heroOnline: "En línea",
+    heroMetrics: [
+      { label: "Clientes atendidos", value: "1,569", helper: "" },
+      { label: "Conversaciones", value: "258 de 800", helper: "" },
+      { label: "Sentimiento del cliente", value: "😊", helper: "" },
+    ],
+    heroMessages: [
+      {
+        author: "Agente",
+        avatar: "🤖",
+        align: "left",
+        text: "Hola, soy Nova. Soy del Restaurante XYZ. Cómo te puedo ayudar?",
+      },
+      {
+        author: "María",
+        avatar: "👩",
+        align: "right",
+        text: "Hola, necesito una mesa de última hora para dos esta noche a las 8pm. Puedes ayudarme?",
+      },
+      {
+        author: "Agente",
+        avatar: "🤖",
+        align: "left",
+        text: "¡Por supuesto! Tengo una mesa disponible en la terraza. ¿Te confirmo a tu nombre?",
+      },
+      {
+        author: "María",
+        avatar: "👩",
+        align: "right",
+        text: "Sí, por favor.",
+      },
+      {
+        author: "Agente",
+        avatar: "🤖",
+        align: "left",
+        text:
+          "¡Genial! Deberías haber recibido un correo electrónico con los detalles de tu reserva. Nos vemos esta noche a las 8pm. ¡Espero que disfrutes de la cena!",
+      },
+      {
+        author: "María",
+        avatar: "👩",
+        align: "right",
+        text: "Acabo de recibirlo. Gracias!",
+      },
+    ],
     howTitle: "Cómo funciona OnDuty",
     howSteps: [
       {
@@ -522,21 +614,21 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="space-y-28 pb-16 px-4 sm:px-6 lg:px-8 md:space-y-36">
+    <div className="space-y-24 pb-16 px-4 sm:px-6 lg:px-8 md:space-y-32">
       {/* Hero */}
-      <section className="pt-16 pb-20 md:pt-24 md:pb-32">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900/5 via-slate-50 to-white shadow-xl dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-950">
+      <section className="pt-0 pb-8 md:pt-1 md:pb-10 lg:min-h-[calc(100vh-120px)]">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-100 via-white to-slate-50 shadow-xl dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-950">
           <div className="absolute inset-0 opacity-60">
             <div className="absolute left-8 top-10 h-32 w-32 rounded-full bg-onDutyGold/40 blur-3xl" />
             <div className="absolute bottom-10 right-12 h-48 w-48 rounded-full bg-onDutyWine/35 blur-3xl" />
           </div>
-          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:px-10">
+          <div className="relative mx-auto grid max-w-6xl items-center gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:px-10">
             <div className="text-onDutyNavy dark:text-white">
               <div className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
                 {lang === "en" ? "Always-on AI agents" : "Always-on AI agents"}
               </div>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">{c.heroTitle}</h1>
-              <p className="mt-4 max-w-2xl text-base text-slate-700 md:text-lg dark:text-slate-200">{c.heroSubtitle}</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl md:text-[2.6rem]">{c.heroTitle}</h1>
+              <p className="mt-3 max-w-2xl text-sm text-slate-700 md:text-base dark:text-slate-200">{c.heroSubtitle}</p>
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <PrimaryButton href="/try">{c.heroPrimaryCtaTry}</PrimaryButton>
                 <SecondaryButton onClick={handleScrollToUseCases}>{c.heroSecondaryLink}</SecondaryButton>
@@ -545,46 +637,67 @@ export default function LandingPage() {
 
             <div className="relative">
               <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-onDutyGold/40 blur-3xl" />
-              <div className="relative rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+              <div className="relative rounded-3xl border border-slate-200/70 bg-white p-4 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">OnDuty Dashboard</p>
-                    <p className="text-xl font-semibold text-onDutyNavy dark:text-white">Live engagement</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-onDutyNavy text-sm font-semibold text-white">AI</div>
+                    <div>
+                      <p className="text-sm font-semibold text-onDutyNavy dark:text-white">Agent Nova</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-300">{c.heroRealtime}</p>
+                    </div>
                   </div>
                   <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-100">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
-                    {lang === "en" ? "Online" : "En línea"}
+                    {c.heroOnline}
                   </span>
                 </div>
 
-                <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                  {["Leads captured", "Conversations", "Avg. response"].map((label, idx) => (
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {c.heroMetrics.map((metric) => (
                     <div
-                      key={label}
-                      className="rounded-2xl border border-slate-200/80 bg-white/80 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
+                      key={metric.label}
+                      className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
                     >
-                      <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
-                      <p className="text-xl font-semibold text-onDutyNavy dark:text-white">{idx === 0 ? "2,341" : idx === 1 ? "8,120" : "1.8s"}</p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-300">{idx === 0 ? "+28%" : idx === 1 ? "multi-channel" : "coverage"}</p>
+                      <p className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{metric.label}</p>
+                      <p className="text-base font-semibold text-onDutyNavy dark:text-white">{metric.value}</p>
+                      {metric.helper ? (
+                        <p className="text-xs text-emerald-600 dark:text-emerald-300">{metric.helper}</p>
+                      ) : null}
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-6 space-y-3 rounded-2xl border border-slate-200/80 bg-gradient-to-r from-slate-50 to-white p-4 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/80">
-                  <div className="flex items-start gap-2">
-                    <div className="mt-1 h-2 w-2 rounded-full bg-slate-400" aria-hidden />
-                    <div>
-                      <p className="text-xs font-semibold text-slate-500">Agent Nova</p>
-                      <p className="text-sm text-slate-700 dark:text-slate-200">I see a multi-night booking for tomorrow night. Want me to lock it?</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="mt-1 h-2 w-2 rounded-full bg-onDutyGold" aria-hidden />
-                    <div>
-                      <p className="text-xs font-semibold text-slate-500">Guest</p>
-                      <p className="text-sm text-slate-700 dark:text-slate-200">Absolutely! I can reserve a queen suite for tomorrow with late check-in. Should I confirm under your name?</p>
-                    </div>
-                  </div>
+                <div className="mt-4 space-y-2.5 rounded-2xl border border-slate-200/80 bg-gradient-to-r from-slate-50 to-white p-3.5 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/80">
+                  {c.heroMessages.map((message) => {
+                    const isRight = message.align === "right";
+                    return (
+                      <div
+                        key={`${message.author}-${message.text}`}
+                        className={`flex w-full items-start gap-3 ${isRight ? "justify-end" : "justify-start"}`}
+                      >
+                        {!isRight && (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-lg shadow-inner dark:bg-slate-800">
+                            <span aria-hidden>{message.avatar}</span>
+                          </div>
+                        )}
+                        <div
+                          className={`max-w-[82%] rounded-2xl border p-2.5 text-left shadow-sm ${
+                            isRight
+                              ? "ml-auto border-emerald-100 bg-emerald-50 text-onDutyNavy dark:border-emerald-800/60 dark:bg-emerald-900/30"
+                              : "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700/60 dark:bg-slate-800/60 dark:text-slate-100"
+                          }`}
+                        >
+                          <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-300">{message.author}</p>
+                          <p className="text-[10px] text-slate-700 sm:text-xs md:text-[13px] dark:text-slate-100">{message.text}</p>
+                        </div>
+                        {isRight && (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-lg shadow-inner dark:bg-slate-800">
+                            <span aria-hidden>{message.avatar}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -651,11 +764,16 @@ export default function LandingPage() {
 
       {/* Use cases */}
       <section id="use-cases" className="mx-auto max-w-6xl space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.useCasesTitle}</h2>
-          <p className="text-lg text-slate-600 dark:text-slate-300">
-            {lang === "en" ? "Answer the questions that slow you down." : "Responde las dudas que frenan a tus clientes."}
-          </p>
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.useCasesTitle}</h2>
+            <p className="text-lg text-slate-600 dark:text-slate-300">
+              {lang === "en" ? "Answer the questions that slow you down." : "Responde las dudas que frenan a tus clientes."}
+            </p>
+          </div>
+          <SecondaryButton href="/use-cases" className="w-full justify-center md:w-auto">
+            {lang === "en" ? "See all use cases" : "Ver todos los casos de uso"}
+          </SecondaryButton>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {c.useCases.map((item) => (
@@ -834,7 +952,7 @@ export default function LandingPage() {
               </div>
               <p className="mt-1 text-2xl font-bold text-onDutyNavy dark:text-white">{plan.price}</p>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{plan.label}</p>
-              <ul className="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+              <ul className="mt-4 flex-1 space-y-2 text-sm text-slate-700 dark:text-slate-200">
                 {plan.bullets.map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span>•</span>
@@ -842,17 +960,18 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-6 pt-4 border-t border-slate-200/70 dark:border-slate-800" />
-              <div className="mt-4">
-                {plan.ctaLabel ? (
-                  <SecondaryButton href="mailto:hello@alwaysonduty.ai" className="w-full justify-center">
-                    {plan.ctaLabel}
-                  </SecondaryButton>
-                ) : (
-                  <PrimaryButton href={`/signup?plan=${plan.id}`} className="w-full justify-center">
-                    {c.heroPrimaryCtaSignup}
-                  </PrimaryButton>
-                )}
+              <div className="mt-auto pt-4 border-t border-slate-200/70 dark:border-slate-800">
+                <div className="mt-4">
+                  {plan.ctaLabel ? (
+                    <SecondaryButton href="mailto:hello@alwaysonduty.ai" className="w-full justify-center">
+                      {plan.ctaLabel}
+                    </SecondaryButton>
+                  ) : (
+                    <PrimaryButton href={`/signup?plan=${plan.id}`} className="w-full justify-center">
+                      {c.heroPrimaryCtaSignup}
+                    </PrimaryButton>
+                  )}
+                </div>
               </div>
             </div>
           ))}
