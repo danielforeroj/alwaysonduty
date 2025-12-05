@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -8,7 +8,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 type PlanType = "starter" | "growth" | "premium";
 type TrialMode = "with_card" | "no_card";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialPlan = useMemo<PlanType>(() => {
@@ -162,5 +162,13 @@ export default function SignupPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-center text-sm text-slate-500">Loading signup…</div>}>
+      <SignupForm />
+    </Suspense>
   );
 }
