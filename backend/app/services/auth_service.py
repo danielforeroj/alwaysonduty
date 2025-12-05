@@ -1,13 +1,26 @@
+from datetime import datetime, timedelta
+
 from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.schemas.auth import LoginRequest, SignupRequest
-from app.services.tenant_service import create_tenant, slugify
+from app.services.tenant_service import create_tenant
 from app.utils.security import create_access_token, hash_password, verify_password
 
 
 def signup(db: Session, payload: SignupRequest):
-    tenant = create_tenant(db, name=payload.business_name, plan_type=payload.plan_type)
+    trial_mode = payload.trial_mode or "with_card"
+    trial_days = 15 if trial_mode == "with_card" else 3
+    trial_ends_at = datetime.utcnow() + timedelta(days=trial_days)
+
+    tenant = create_tenant(
+        db,
+        name=payload.business_name,
+        plan_type=payload.plan_type,
+        trial_mode=trial_mode,
+        trial_ends_at=trial_ends_at,
+        billing_status="trial",
+    )
     user = User(
         tenant_id=tenant.id,
         email=payload.email,

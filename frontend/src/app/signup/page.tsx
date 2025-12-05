@@ -1,13 +1,25 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+type PlanType = "starter" | "growth" | "premium";
+type TrialMode = "with_card" | "no_card";
+
 export default function SignupPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", business_name: "", email: "", password: "", plan_type: "starter" });
+  const searchParams = useSearchParams();
+  const initialPlan = useMemo<PlanType>(() => {
+    const plan = (searchParams?.get("plan") as PlanType | null) || "starter";
+    return ["starter", "growth", "premium"].includes(plan) ? plan : "starter";
+  }, [searchParams]);
+
+  const [form, setForm] = useState<{ name: string; business_name: string; email: string; password: string; plan_type: PlanType }>(
+    { name: "", business_name: "", email: "", password: "", plan_type: initialPlan },
+  );
+  const [trialMode, setTrialMode] = useState<TrialMode>("with_card");
   const [error, setError] = useState<string | null>(null);
   const [configError, setConfigError] = useState<string | null>(
     API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
@@ -26,12 +38,32 @@ export default function SignupPage() {
       const res = await fetch(`${base}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, trial_mode: trialMode }),
       });
-      if (!res.ok) throw new Error("Signup failed");
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.detail || "Signup failed");
+      }
       localStorage.setItem("on_duty_token", data.access_token);
-      router.push("/dashboard");
+
+      if (trialMode === "no_card") {
+        router.push("/dashboard");
+        return;
+      }
+
+      const checkoutRes = await fetch(`${base}/api/billing/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${data.access_token}`,
+        },
+        body: JSON.stringify({ plan_type: form.plan_type, trial_mode: "with_card" }),
+      });
+      const checkoutData = await checkoutRes.json();
+      if (!checkoutRes.ok || !checkoutData.checkout_url) {
+        throw new Error(checkoutData?.detail || "Could not start checkout");
+      }
+      window.location.href = checkoutData.checkout_url;
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -89,12 +121,35 @@ export default function SignupPage() {
           <select
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             value={form.plan_type}
-            onChange={(e) => setForm({ ...form, plan_type: e.target.value })}
+            onChange={(e) => setForm({ ...form, plan_type: e.target.value as PlanType })}
           >
             <option value="starter">Starter</option>
             <option value="growth">Growth</option>
             <option value="premium">Premium</option>
           </select>
+        </div>
+        <div className="space-y-2 rounded-lg border border-dashed border-slate-300 p-3 text-sm">
+          <p className="font-semibold text-slate-700">Trial options</p>
+          <label className="flex items-center gap-2 text-slate-700">
+            <input
+              type="radio"
+              name="trial"
+              value="with_card"
+              checked={trialMode === "with_card"}
+              onChange={() => setTrialMode("with_card")}
+            />
+            <span>15-day free trial (card required)</span>
+          </label>
+          <label className="flex items-center gap-2 text-slate-700">
+            <input
+              type="radio"
+              name="trial"
+              value="no_card"
+              checked={trialMode === "no_card"}
+              onChange={() => setTrialMode("no_card")}
+            />
+            <span>3-day free trial (no card yet)</span>
+          </label>
         </div>
         {configError && <p className="text-sm text-red-600">{configError}</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}

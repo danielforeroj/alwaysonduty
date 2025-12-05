@@ -47,14 +47,17 @@ export const copy = {
         {
           title: "Starter",
           copy: "Hosted web chat, CS agent, basic analytics.",
+          plan: "starter",
         },
         {
           title: "Growth",
           copy: "Sales + CS agent, more analytics, more seats.",
+          plan: "growth",
         },
         {
           title: "Premium",
           copy: "Channel integrations, advanced analytics.",
+          plan: "premium",
         },
       ],
     },
@@ -114,14 +117,17 @@ export const copy = {
         {
           title: "Starter",
           copy: "Chat web alojado, agente de soporte, analíticas básicas.",
+          plan: "starter",
         },
         {
           title: "Growth",
           copy: "Agente de ventas + soporte, más analíticas y asientos.",
+          plan: "growth",
         },
         {
           title: "Premium",
           copy: "Integraciones de canales, analíticas avanzadas.",
+          plan: "premium",
         },
       ],
     },
