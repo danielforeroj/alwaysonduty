@@ -16,7 +16,7 @@ class ChannelIdentity(Base):
     customer_id = Column(UUID(as_uuid=True), ForeignKey("customers.id"), nullable=False)
     channel = Column(String, nullable=False)
     external_id = Column(String, nullable=False)
-    metadata = Column(Text, nullable=True)
+    meta = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     tenant = relationship("Tenant", backref="channel_identities")

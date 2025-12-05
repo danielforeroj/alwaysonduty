@@ -19,8 +19,8 @@ def create_conversation(db: Session, tenant_id, customer_id, channel: str, agent
     return conversation
 
 
-def add_message(db: Session, conversation_id, sender: str, text: str, metadata: Optional[str] = None) -> Message:
-    message = Message(conversation_id=conversation_id, sender=sender, text=text, metadata=metadata)
+def add_message(db: Session, conversation_id, sender: str, text: str, meta: Optional[str] = None) -> Message:
+    message = Message(conversation_id=conversation_id, sender=sender, text=text, meta=meta)
     db.add(message)
     db.commit()
     db.refresh(message)

@@ -9,7 +9,7 @@ class MessageOut(BaseModel):
     id: UUID
     sender: str
     text: str
-    metadata: Optional[str] = None
+    meta: Optional[str] = None
     created_at: datetime
 
     class Config:

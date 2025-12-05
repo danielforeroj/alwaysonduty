@@ -13,5 +13,5 @@ class Message(Base):
     conversation_id = Column(UUID(as_uuid=True), ForeignKey("conversations.id"), nullable=False)
     sender = Column(String, nullable=False)
     text = Column(Text, nullable=False)
-    metadata = Column(Text, nullable=True)
+    meta = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
