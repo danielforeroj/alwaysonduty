@@ -11,6 +11,7 @@ class SignupRequest(BaseModel):
     email: EmailStr
     password: str
     plan_type: str = "starter"
+    trial_mode: Optional[str] = "with_card"
 
 
 class LoginRequest(BaseModel):
@@ -23,6 +24,9 @@ class TenantInfo(BaseModel):
     name: str
     slug: str
     plan_type: str
+    billing_status: Optional[str] = None
+    trial_mode: Optional[str] = None
+    trial_ends_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True

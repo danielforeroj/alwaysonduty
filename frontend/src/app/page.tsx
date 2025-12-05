@@ -169,7 +169,7 @@ export default function LandingPage() {
             >
               <h3 className="text-xl font-semibold text-onDutyNavy dark:text-white">{tier.title}</h3>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{tier.copy}</p>
-              <PrimaryButton href="/signup" className="mt-6 justify-center">
+              <PrimaryButton href={`/signup?plan=${tier.plan}`} className="mt-6 justify-center">
                 {t.nav.signup}
               </PrimaryButton>
             </div>

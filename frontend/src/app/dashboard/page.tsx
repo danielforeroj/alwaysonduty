@@ -8,6 +8,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 interface TenantInfo {
   name: string;
   plan_type: string;
+  billing_status?: string;
+  trial_ends_at?: string | null;
 }
 
 interface Conversation {
@@ -80,6 +82,12 @@ export default function DashboardPage() {
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">Welcome, {tenant?.name || ""}</h1>
         <p className="text-slate-600">Plan: {tenant?.plan_type}</p>
+        {tenant?.billing_status && <p className="text-slate-600">Billing status: {tenant.billing_status}</p>}
+        {tenant?.trial_ends_at && (
+          <p className="text-slate-600">
+            Trial ends: {new Date(tenant.trial_ends_at).toLocaleDateString()}
+          </p>
+        )}
         <p className="text-slate-600">Conversations: {conversations.length}</p>
       </div>
 

@@ -13,7 +13,10 @@ const baseButton =
   "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition duration-200 active:opacity-50";
 
 const primaryClasses =
-  "bg-onDutyNavy text-white border border-transparent hover:bg-transparent hover:text-onDutyNavy hover:border-onDutyNavy";
+  [
+    "border border-transparent bg-onDutyNavy text-white hover:bg-transparent hover:text-onDutyNavy hover:border-onDutyNavy",
+    "dark:bg-onDutyGold dark:text-onDutyNavy dark:hover:bg-transparent dark:hover:text-onDutyGold dark:hover:border-onDutyGold",
+  ].join(" ");
 
 const secondaryClasses =
   "border border-onDutyNavy text-onDutyNavy hover:bg-onDutyNavy hover:text-white";

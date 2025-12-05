@@ -18,8 +18,14 @@ FastAPI backend for the multi-tenant OnDuty platform.
    DATABASE_URL=
    BACKEND_JWT_SECRET=
    BACKEND_JWT_ALGORITHM=HS256
+   STRIPE_SECRET_KEY=
+   STRIPE_WEBHOOK_SECRET=
+   STRIPE_PRICE_STARTER=
+   STRIPE_PRICE_GROWTH=
+   STRIPE_PRICE_PREMIUM=
+   FRONTEND_BASE_URL=http://localhost:3000
    ```
-   Use your own Postgres connection string and a long random JWT secret.
+   Use your own Postgres connection string and a long random JWT secret. Stripe keys and price IDs are optional but required for checkout.
 4. Run database migrations:
    ```bash
    alembic upgrade head
@@ -28,6 +34,11 @@ FastAPI backend for the multi-tenant OnDuty platform.
    ```bash
    uvicorn app.main:app --reload
    ```
+
+## Stripe setup
+- Create products/prices in Stripe and populate the `STRIPE_PRICE_*` env vars with the price IDs for starter, growth, and premium.
+- Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` from your Stripe dashboard.
+- `FRONTEND_BASE_URL` is used for Checkout success/cancel URLs.
 
 ## Health Check
 The service exposes a simple readiness endpoint:
