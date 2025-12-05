@@ -19,9 +19,9 @@ const copy = {
     heroRealtime: "Realtime responses",
     heroOnline: "Online",
     heroMetrics: [
-      { label: "Leads captured", value: "2,341", helper: "+28%" },
-      { label: "Conversations", value: "8,120", helper: "Multichannel" },
-      { label: "Avg. response", value: "1.8 s", helper: "Coverage" },
+      { label: "Clients served", value: "1,569", helper: "" },
+      { label: "Conversations", value: "258 of 800", helper: "" },
+      { label: "Client sentiment", value: "😊", helper: "" },
     ],
     heroMessages: [
       {
@@ -305,9 +305,9 @@ const copy = {
     heroRealtime: "Interacción en directo",
     heroOnline: "En línea",
     heroMetrics: [
-      { label: "Clientes potenciales captados", value: "2341", helper: "+28%" },
-      { label: "Conversaciones", value: "8120", helper: "Multicanal" },
-      { label: "Respuesta media", value: "1,8 s", helper: "Cobertura" },
+      { label: "Clientes atendidos", value: "1,569", helper: "" },
+      { label: "Conversaciones", value: "258 de 800", helper: "" },
+      { label: "Sentimiento del cliente", value: "😊", helper: "" },
     ],
     heroMessages: [
       {
@@ -614,9 +614,9 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="space-y-32 pb-16 px-4 sm:px-6 lg:px-8 md:space-y-44">
+    <div className="space-y-28 pb-16 px-4 sm:px-6 lg:px-8 md:space-y-36">
       {/* Hero */}
-      <section className="pt-16 pb-20 md:pt-24 md:pb-32">
+      <section className="pt-10 pb-16 md:pt-14 md:pb-24 lg:min-h-[75vh]">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-100 via-white to-slate-50 shadow-xl dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-950">
           <div className="absolute inset-0 opacity-60">
             <div className="absolute left-8 top-10 h-32 w-32 rounded-full bg-onDutyGold/40 blur-3xl" />
@@ -660,7 +660,9 @@ export default function LandingPage() {
                     >
                       <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{metric.label}</p>
                       <p className="text-xl font-semibold text-onDutyNavy dark:text-white">{metric.value}</p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-300">{metric.helper}</p>
+                      {metric.helper ? (
+                        <p className="text-xs text-emerald-600 dark:text-emerald-300">{metric.helper}</p>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -684,7 +686,7 @@ export default function LandingPage() {
                           }`}
                         >
                           <p className="text-xs font-semibold text-slate-500 dark:text-slate-300">{message.author}</p>
-                          <p className="text-sm text-slate-700 dark:text-slate-100">{message.text}</p>
+                          <p className="text-[13px] text-slate-700 md:text-sm dark:text-slate-100">{message.text}</p>
                         </div>
                       </div>
                     );
