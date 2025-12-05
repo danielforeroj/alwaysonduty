@@ -59,6 +59,7 @@ function ResetPasswordForm() {
           <input
             required
             type="password"
+            autoComplete="new-password"
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
@@ -69,6 +70,7 @@ function ResetPasswordForm() {
           <input
             required
             type="password"
+            autoComplete="new-password"
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}

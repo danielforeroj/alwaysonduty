@@ -49,6 +49,7 @@ export default function LoginPage() {
           <input
             required
             type="email"
+            autoComplete="username"
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -59,6 +60,7 @@ export default function LoginPage() {
           <input
             required
             type="password"
+            autoComplete="current-password"
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}

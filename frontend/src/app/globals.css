@@ -5,3 +5,9 @@
 body {
   @apply bg-white text-slate-900;
 }
+
+/* Ensure password fields are visibly masked across browsers */
+input[type="password"] {
+  -webkit-text-security: disc;
+  text-security: disc;
+}

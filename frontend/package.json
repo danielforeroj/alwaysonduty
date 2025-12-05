@@ -8,6 +8,10 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "overrides": {
+    "rimraf": "^5.0.10",
+    "glob": "^10.4.5"
+  },
   "dependencies": {
     "next": "14.2.5",
     "react": "18.3.1",
