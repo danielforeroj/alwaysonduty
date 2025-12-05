@@ -12,6 +12,11 @@ interface TenantInfo {
   trial_ends_at?: string | null;
 }
 
+interface UserInfo {
+  email: string;
+  email_verified?: boolean;
+}
+
 interface Conversation {
   id: string;
   channel: string;
@@ -22,6 +27,7 @@ interface Conversation {
 export default function DashboardPage() {
   const router = useRouter();
   const [tenant, setTenant] = useState<TenantInfo | null>(null);
+  const [user, setUser] = useState<UserInfo | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [configError, setConfigError] = useState<string | null>(
@@ -51,6 +57,7 @@ export default function DashboardPage() {
         if (!meRes.ok) throw new Error("Unauthorized");
         const meData = await meRes.json();
         setTenant(meData.tenant);
+        setUser(meData.user);
 
         const convoRes = await fetch(`${base}/api/conversations`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -79,6 +86,11 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {!user?.email_verified && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          Please verify your email. Check your inbox for a verification link.
+        </div>
+      )}
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">Welcome, {tenant?.name || ""}</h1>
         <p className="text-slate-600">Plan: {tenant?.plan_type}</p>

@@ -10,7 +10,15 @@ sys.path.append(BASE_DIR)
 
 from app.config import get_settings  # noqa: E402
 from app.db import Base  # noqa: E402
-from app.models import tenant, user, customer, channel_identity, conversation, message  # noqa: F401,E402
+from app.models import (  # noqa: F401,E402
+    channel_identity,
+    conversation,
+    customer,
+    message,
+    tenant,
+    token,
+    user,
+)
 
 config = context.config
 fileConfig(config.config_file_name)

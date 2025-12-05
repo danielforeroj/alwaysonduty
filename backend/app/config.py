@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     stripe_price_growth: Optional[str] = Field(None, env="STRIPE_PRICE_GROWTH")
     stripe_price_premium: Optional[str] = Field(None, env="STRIPE_PRICE_PREMIUM")
     frontend_base_url: str = Field("http://localhost:3000", env="FRONTEND_BASE_URL")
+    resend_api_key: Optional[str] = Field(None, env="RESEND_API_KEY")
+    resend_from_email: Optional[str] = Field(None, env="RESEND_FROM_EMAIL")
 
     class Config:
         env_file = ".env"

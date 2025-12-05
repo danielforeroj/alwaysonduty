@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -16,7 +16,15 @@ class User(Base):
     email = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(String, default="admin", nullable=False)
+    email_verified = Column(Boolean, nullable=False, default=False)
+    email_verified_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     tenant = relationship("Tenant", backref="users")
+    email_verification_tokens = relationship(
+        "EmailVerificationToken", back_populates="user", cascade="all, delete-orphan"
+    )
+    password_reset_tokens = relationship(
+        "PasswordResetToken", back_populates="user", cascade="all, delete-orphan"
+    )

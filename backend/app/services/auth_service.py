@@ -1,11 +1,28 @@
+import secrets
 from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
+from app.models.token import EmailVerificationToken, PasswordResetToken
 from app.models.user import User
 from app.schemas.auth import LoginRequest, SignupRequest
 from app.services.tenant_service import create_tenant
 from app.utils.security import create_access_token, hash_password, verify_password
+
+
+def _create_email_verification_token(db: Session, user: User) -> EmailVerificationToken:
+    token_str = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(days=2)
+    token = EmailVerificationToken(
+        user_id=user.id,
+        token=token_str,
+        expires_at=expires_at,
+        used=False,
+    )
+    db.add(token)
+    db.commit()
+    db.refresh(token)
+    return token
 
 
 def signup(db: Session, payload: SignupRequest):
@@ -30,8 +47,9 @@ def signup(db: Session, payload: SignupRequest):
     db.add(user)
     db.commit()
     db.refresh(user)
-    token = create_access_token({"sub": str(user.id), "tenant_id": str(tenant.id)})
-    return token, tenant, user
+    verification_token = _create_email_verification_token(db, user)
+    access_token = create_access_token({"sub": str(user.id), "tenant_id": str(tenant.id)})
+    return access_token, tenant, user, verification_token.token
 
 
 def login(db: Session, payload: LoginRequest):
@@ -47,3 +65,56 @@ def login(db: Session, payload: LoginRequest):
 
         tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
     return token, tenant, user
+
+
+def verify_email(db: Session, token_str: str) -> bool:
+    token = (
+        db.query(EmailVerificationToken)
+        .filter(EmailVerificationToken.token == token_str)
+        .first()
+    )
+    if not token or token.used or token.expires_at < datetime.utcnow():
+        return False
+
+    user = token.user
+    user.email_verified = True
+    user.email_verified_at = datetime.utcnow()
+    token.used = True
+
+    db.add(user)
+    db.add(token)
+    db.commit()
+    return True
+
+
+def request_password_reset(db: Session, email: str):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        return None, None
+
+    reset_token = PasswordResetToken(
+        user_id=user.id,
+        token=secrets.token_urlsafe(32),
+        expires_at=datetime.utcnow() + timedelta(hours=1),
+        used=False,
+    )
+    db.add(reset_token)
+    db.commit()
+    db.refresh(reset_token)
+    return user, reset_token.token
+
+
+def reset_password(db: Session, token_str: str, new_password: str) -> bool:
+    token = (
+        db.query(PasswordResetToken).filter(PasswordResetToken.token == token_str).first()
+    )
+    if not token or token.used or token.expires_at < datetime.utcnow():
+        return False
+
+    user = token.user
+    user.hashed_password = hash_password(new_password)
+    token.used = True
+    db.add(user)
+    db.add(token)
+    db.commit()
+    return True

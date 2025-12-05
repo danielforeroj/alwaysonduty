@@ -38,6 +38,7 @@ class UserInfo(BaseModel):
     role: str
     tenant_id: UUID
     created_at: datetime
+    email_verified: bool = False
 
     class Config:
         orm_mode = True
@@ -48,3 +49,16 @@ class AuthResponse(BaseModel):
     token_type: str = "bearer"
     tenant: TenantInfo
     user: UserInfo
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+
+class RequestPasswordReset(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str

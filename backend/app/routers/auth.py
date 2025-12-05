@@ -1,20 +1,44 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.schemas.auth import AuthResponse, LoginRequest, SignupRequest, TenantInfo, UserInfo
-from app.services import auth_service
+from app.config import get_settings
+from app.schemas.auth import (
+    AuthResponse,
+    LoginRequest,
+    RequestPasswordReset,
+    ResetPasswordRequest,
+    SignupRequest,
+    TenantInfo,
+    UserInfo,
+    VerifyEmailRequest,
+)
+from app.services import auth_service, email_service
 from app.utils.dependencies import get_current_user, get_db
 from app.utils.security import create_access_token
 
 router = APIRouter()
 
 
+settings = get_settings()
+
+
 @router.post("/signup", response_model=AuthResponse)
-def signup(payload: SignupRequest, db: Session = Depends(get_db)):
+def signup(
+    payload: SignupRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     try:
-        token, tenant, user = auth_service.signup(db, payload)
+        token, tenant, user, verification_token = auth_service.signup(db, payload)
     except Exception:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not create tenant")
+    background_tasks.add_task(email_service.send_account_creation_email, user, tenant)
+    background_tasks.add_task(
+        email_service.send_email_verification_email,
+        user,
+        verification_token,
+        settings.frontend_base_url,
+    )
     return AuthResponse(
         access_token=token,
         tenant=TenantInfo.from_orm(tenant),
@@ -42,3 +66,39 @@ def me(current_user=Depends(get_current_user)):
         tenant=TenantInfo.from_orm(current_user.tenant),
         user=UserInfo.from_orm(current_user),
     )
+
+
+@router.post("/verify-email")
+def verify_email(payload: VerifyEmailRequest, db: Session = Depends(get_db)):
+    ok = auth_service.verify_email(db, payload.token)
+    if not ok:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification token.",
+        )
+    return {"detail": "Email verified successfully."}
+
+
+@router.post("/request-password-reset")
+def request_password_reset(
+    payload: RequestPasswordReset,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    user, token = auth_service.request_password_reset(db, payload.email)
+    if user and token:
+        background_tasks.add_task(
+            email_service.send_password_reset_email, user, token, settings.frontend_base_url
+        )
+    return {"detail": "If that email exists, a reset link has been sent."}
+
+
+@router.post("/reset-password")
+def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+    ok = auth_service.reset_password(db, payload.token, payload.new_password)
+    if not ok:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token.",
+        )
+    return {"detail": "Password has been reset successfully."}

@@ -1,13 +1,12 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [form, setForm] = useState({ email: "", password: "" });
+export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [configError, setConfigError] = useState<string | null>(
     API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
@@ -18,20 +17,21 @@ export default function LoginPage() {
     setError(null);
     const base = API_BASE;
     if (!base) {
-      console.error("NEXT_PUBLIC_API_BASE_URL is not set. Cannot log in.");
       setConfigError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
       return;
     }
+
     try {
-      const res = await fetch(`${base}/api/auth/login`, {
+      const res = await fetch(`${base}/api/auth/request-password-reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ email }),
       });
-      if (!res.ok) throw new Error("Login failed");
-      const data = await res.json();
-      localStorage.setItem("on_duty_token", data.access_token);
-      router.push("/dashboard");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data?.detail || "Could not send reset link");
+      }
+      setMessage("If that email exists, a reset link has been sent.");
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -40,8 +40,8 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md space-y-6">
       <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Welcome back</h1>
-        <p className="text-slate-600">Log in to manage your tenant.</p>
+        <h1 className="text-2xl font-semibold text-slate-900">Reset your password</h1>
+        <p className="text-slate-600">Enter your email to receive a reset link.</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl bg-white p-6 shadow-sm">
         <div>
@@ -50,33 +50,19 @@ export default function LoginPage() {
             required
             type="email"
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
-        </div>
-        <div>
-          <label className="text-sm text-slate-600">Password</label>
-          <input
-            required
-            type="password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-          />
-        </div>
-        <div className="text-right text-sm">
-          <a href="/forgot-password" className="text-slate-700 underline">
-            Forgot password?
-          </a>
         </div>
         {configError && <p className="text-sm text-red-600">{configError}</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
+        {message && <p className="text-sm text-green-600">{message}</p>}
         <button
           type="submit"
           disabled={!!configError}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white shadow hover:bg-slate-800 disabled:opacity-50"
         >
-          Log in
+          Send reset link
         </button>
       </form>
     </div>

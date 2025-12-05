@@ -1,10 +1,14 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 import stripe
 
 from app.config import get_settings
 from app.models.tenant import Tenant
+from app.models.user import User
 from app.schemas.billing import CheckoutRequest, CheckoutResponse
+from app.services import email_service
 from app.utils.dependencies import get_current_user, get_db
 
 router = APIRouter()
@@ -77,6 +81,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
+    stripe.api_key = settings.stripe_secret_key
     try:
         event = stripe.Webhook.construct_event(
             payload=payload, sig_header=sig_header, secret=settings.stripe_webhook_secret
@@ -95,5 +100,32 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             tenant.billing_status = "active"
             db.add(tenant)
             db.commit()
+
+            primary_user = db.query(User).filter(User.tenant_id == tenant.id).order_by(User.id.asc()).first()
+            if primary_user:
+                email_service.send_plan_subscription_email(
+                    primary_user, tenant, tenant.plan_type or "starter"
+                )
+    elif event.get("type") == "invoice.payment_succeeded":
+        invoice = event["data"]["object"]
+        customer_id = invoice.get("customer")
+
+        if customer_id:
+            tenant = db.query(Tenant).filter(Tenant.stripe_customer_id == customer_id).first()
+            if tenant:
+                tenant.billing_status = "active"
+                db.add(tenant)
+                db.commit()
+
+                primary_user = (
+                    db.query(User).filter(User.tenant_id == tenant.id).order_by(User.id.asc()).first()
+                )
+                if primary_user:
+                    email_service.send_renewal_notification_email(
+                        primary_user,
+                        tenant,
+                        tenant.plan_type or "starter",
+                        renewal_date=datetime.utcnow(),
+                    )
 
     return {"received": True}

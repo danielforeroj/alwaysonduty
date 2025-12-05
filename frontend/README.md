@@ -23,6 +23,9 @@ Next.js + Tailwind app for the OnDuty SaaS experience.
 - Demo chat: `/try`
 - Signup: `/signup`
 - Login: `/login`
+- Forgot password: `/forgot-password`
+- Reset password: `/reset-password?token=...`
+- Verify email: `/verify-email?token=...`
 - Dashboard (requires token in localStorage): `/dashboard`
 
 ## Deploying on Vercel
