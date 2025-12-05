@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic>=1.10,<2.0
+alembic
+python-jose[cryptography]
+passlib[bcrypt]
+resend
+psycopg2-binary
+stripe
