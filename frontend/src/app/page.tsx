@@ -10,22 +10,12 @@ type LangKey = "en" | "es";
 
 const copy = {
   en: {
-    heroTitle: "AI agents that stay on duty when your team logs off.",
+    heroTitle: "AI sales & support that never clock out.",
     heroSubtitle:
-      "OnDuty handles customer questions 24/7 through a simple web chat. Built for small and medium businesses. WhatsApp & Telegram coming soon.",
+      "OnDuty connects to your web, WhatsApp, and Telegram channels to handle leads, bookings, and customer questions 24/7—without adding headcount.",
     heroPrimaryCtaTry: "Try our agent",
-    heroPrimaryCtaTrySub: "See a live demo in your browser in under a minute.",
     heroPrimaryCtaSignup: "Sign up for free",
-    heroPrimaryCtaSignupSub: "Start a 3-day free trial. Extend to 15 days when you add your card.",
     heroSecondaryLink: "See use cases",
-    whoForItems: [
-      "Hotels & short-term rentals",
-      "Restaurants & delivery",
-      "Clinics & practices",
-      "Retail & e-commerce",
-      "Public offices",
-      "Fintech & banks",
-    ],
     howTitle: "How OnDuty works",
     howSteps: [
       {
@@ -260,22 +250,12 @@ const copy = {
     finalCtaSecondary: "Sign up for free",
   },
   es: {
-    heroTitle: "Agentes de IA siempre de turno, aunque tu equipo no lo esté.",
+    heroTitle: "AI sales & support that never clock out.",
     heroSubtitle:
-      "OnDuty atiende preguntas de tus clientes 24/7 con un chat web sencillo. Diseñado para pymes. Integración con WhatsApp y Telegram muy pronto.",
+      "OnDuty connects to your web, WhatsApp, and Telegram channels to handle leads, bookings, and customer questions 24/7—without adding headcount.",
     heroPrimaryCtaTry: "Probar el agente",
-    heroPrimaryCtaTrySub: "Mira una demo en vivo en tu navegador en menos de un minuto.",
     heroPrimaryCtaSignup: "Crear mi cuenta gratis",
-    heroPrimaryCtaSignupSub: "Empieza con 3 días gratis. Extiende a 15 días cuando agregas tu tarjeta.",
     heroSecondaryLink: "Ver casos de uso",
-    whoForItems: [
-      "Hoteles y rentas cortas",
-      "Restaurantes y domicilios",
-      "Clínicas y consultorios",
-      "Retail y e-commerce",
-      "Oficinas públicas",
-      "Fintech y bancos",
-    ],
     howTitle: "Cómo funciona OnDuty",
     howSteps: [
       {
@@ -542,46 +522,34 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="space-y-24 pb-16 px-4 sm:px-6 lg:px-8 md:space-y-32">
+    <div className="space-y-28 pb-16 px-4 sm:px-6 lg:px-8 md:space-y-36">
       {/* Hero */}
-      <section className="pt-16 pb-20 md:pt-20 md:pb-28">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-onDutyNavy">
-          <div className="absolute inset-0 opacity-50">
-            <div className="absolute left-10 top-16 h-40 w-40 rounded-full bg-onDutyGold/40 blur-3xl" />
-            <div className="absolute bottom-10 right-10 h-56 w-56 rounded-full bg-onDutyWine/40 blur-3xl" />
+      <section className="pt-16 pb-20 md:pt-24 md:pb-32">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900/5 via-slate-50 to-white shadow-xl dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-950">
+          <div className="absolute inset-0 opacity-60">
+            <div className="absolute left-8 top-10 h-32 w-32 rounded-full bg-onDutyGold/40 blur-3xl" />
+            <div className="absolute bottom-10 right-12 h-48 w-48 rounded-full bg-onDutyWine/35 blur-3xl" />
           </div>
-          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 sm:px-6 md:py-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:px-8">
-            <div className="text-white">
-              <div className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-amber-900 dark:bg-amber-900/30 dark:text-amber-200">
-                {lang === "en" ? "Always-on AI agents" : "Agentes de IA siempre de turno"}
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:px-10">
+            <div className="text-onDutyNavy dark:text-white">
+              <div className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
+                {lang === "en" ? "Always-on AI agents" : "Always-on AI agents"}
               </div>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">{c.heroTitle}</h1>
-              <p className="mt-4 max-w-2xl text-base text-slate-100 md:text-lg">{c.heroSubtitle}</p>
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">{c.heroTitle}</h1>
+              <p className="mt-4 max-w-2xl text-base text-slate-700 md:text-lg dark:text-slate-200">{c.heroSubtitle}</p>
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <PrimaryButton href="/try">{c.heroPrimaryCtaTry}</PrimaryButton>
-                <PrimaryButton href="/signup" className="bg-onDutyWine hover:border-onDutyWine hover:text-onDutyWine">
-                  {c.heroPrimaryCtaSignup}
-                </PrimaryButton>
-                <SecondaryButton
-                  onClick={handleScrollToUseCases}
-                  className="border-white text-white hover:border-onDutyGold hover:bg-onDutyGold hover:text-onDutyNavy"
-                >
-                  {c.heroSecondaryLink}
-                </SecondaryButton>
-              </div>
-              <div className="mt-3 grid gap-3 text-xs text-slate-100 sm:grid-cols-2">
-                <p>{c.heroPrimaryCtaTrySub}</p>
-                <p>{c.heroPrimaryCtaSignupSub}</p>
+                <SecondaryButton onClick={handleScrollToUseCases}>{c.heroSecondaryLink}</SecondaryButton>
               </div>
             </div>
 
             <div className="relative">
-              <div className="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-onDutyGold/40 blur-3xl" />
-              <div className="relative rounded-3xl border border-white/15 bg-white/85 p-6 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+              <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-onDutyGold/40 blur-3xl" />
+              <div className="relative rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">OnDuty Dashboard</p>
-                    <p className="text-xl font-semibold text-onDutyNavy dark:text-white">Live overview</p>
+                    <p className="text-xl font-semibold text-onDutyNavy dark:text-white">Live engagement</p>
                   </div>
                   <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-100">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
@@ -596,10 +564,8 @@ export default function LandingPage() {
                       className="rounded-2xl border border-slate-200/80 bg-white/80 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
                     >
                       <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
-                      <p className="text-xl font-semibold text-onDutyNavy dark:text-white">
-                        {idx === 0 ? "2,341" : idx === 1 ? "8,120" : "12s"}
-                      </p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-300">{idx === 2 ? "↗" : "+28%"}</p>
+                      <p className="text-xl font-semibold text-onDutyNavy dark:text-white">{idx === 0 ? "2,341" : idx === 1 ? "8,120" : "1.8s"}</p>
+                      <p className="text-xs text-emerald-600 dark:text-emerald-300">{idx === 0 ? "+28%" : idx === 1 ? "multi-channel" : "coverage"}</p>
                     </div>
                   ))}
                 </div>
@@ -608,34 +574,21 @@ export default function LandingPage() {
                   <div className="flex items-start gap-2">
                     <div className="mt-1 h-2 w-2 rounded-full bg-slate-400" aria-hidden />
                     <div>
-                      <p className="text-xs font-semibold text-slate-500">Guest</p>
-                      <p className="text-sm text-slate-700 dark:text-slate-200">Hi, can I check in after midnight?</p>
+                      <p className="text-xs font-semibold text-slate-500">Agent Nova</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-200">I see a multi-night booking for tomorrow night. Want me to lock it?</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="mt-1 h-2 w-2 rounded-full bg-onDutyGold" aria-hidden />
                     <div>
-                      <p className="text-xs font-semibold text-slate-500">OnDuty Agent</p>
-                      <p className="text-sm text-slate-700 dark:text-slate-200">
-                        Absolutely—late check-in is available. I can also share parking and Wi-Fi info now.
-                      </p>
+                      <p className="text-xs font-semibold text-slate-500">Guest</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-200">Absolutely! I can reserve a queen suite for tomorrow with late check-in. Should I confirm under your name?</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Who it's for */}
-      <section className="mx-auto max-w-6xl rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
-        <div className="flex flex-wrap items-center justify-center gap-3 text-sm font-semibold text-onDutyNavy dark:text-white">
-          {c.whoForItems.map((label) => (
-            <span key={label} className="rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-              {label}
-            </span>
-          ))}
         </div>
       </section>
 
