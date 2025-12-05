@@ -120,8 +120,29 @@ const copy = {
       },
     ],
     analyticsTitle: "Analytics and reports you can act on",
-    analyticsText:
-      "See your support reality without exporting to Excel.\n\nOnDuty shows you:\n- Conversation volume & busiest hours – know when you really need people on duty.\n- Topics and questions – understand what guests, patients or customers care about.\n- Per-customer history – every conversation in one place when a human jumps in.\n- Email reports – weekly for every plan, monthly and quarterly on higher tiers.\n- Suspicious activity alerts – get notified when someone abuses or tries to game your agent.",
+    analyticsIntro: "See your support reality without exporting to Excel.",
+    analyticsBullets: [
+      {
+        title: "Conversation volume & busiest hours",
+        text: "Know when you really need people on duty.",
+      },
+      {
+        title: "Topics and questions",
+        text: "Understand what guests, patients or customers care about.",
+      },
+      {
+        title: "Per-customer history",
+        text: "Every conversation in one place when a human jumps in.",
+      },
+      {
+        title: "Email reports",
+        text: "Weekly for every plan, monthly and quarterly on higher tiers.",
+      },
+      {
+        title: "Suspicious activity alerts",
+        text: "Get notified when someone abuses or tries to game your agent.",
+      },
+    ],
     csVsSalesTitle: "Customer service agents today. Sales agents soon.",
     csCardTitle: "Customer service agents",
     csCardTag: "Live now",
@@ -349,8 +370,29 @@ const copy = {
       },
     ],
     analyticsTitle: "Analítica y reportes que sí sirven",
-    analyticsText:
-      "Entiende la realidad de tu soporte sin exportar nada a Excel.\n\nOnDuty te muestra:\n- Volumen de conversaciones y horas pico – para saber cuándo de verdad necesitas gente conectada.\n- Temas y preguntas frecuentes – entiende qué es lo que más preocupa a tus clientes y huéspedes.\n- Historial por cliente – todas las conversaciones en un solo lugar cuando entra alguien de tu equipo.\n- Reportes por correo – semanales en todos los planes; mensuales y trimestrales en los planes superiores.\n- Alertas de actividad sospechosa – te avisamos cuando alguien intenta abusar o “hackear” al agente.",
+    analyticsIntro: "Entiende la realidad de tu soporte sin exportar nada a Excel.",
+    analyticsBullets: [
+      {
+        title: "Volumen de conversaciones y horas pico",
+        text: "Para saber cuándo de verdad necesitas gente conectada.",
+      },
+      {
+        title: "Temas y preguntas frecuentes",
+        text: "Entiende qué es lo que más preocupa a tus clientes y huéspedes.",
+      },
+      {
+        title: "Historial por cliente",
+        text: "Todas las conversaciones en un solo lugar cuando entra alguien de tu equipo.",
+      },
+      {
+        title: "Reportes por correo",
+        text: "Semanales en todos los planes; mensuales y trimestrales en los planes superiores.",
+      },
+      {
+        title: "Alertas de actividad sospechosa",
+        text: "Te avisamos cuando alguien intenta abusar o “hackear” al agente.",
+      },
+    ],
     csVsSalesTitle: "Agentes de servicio hoy. Agentes de ventas muy pronto.",
     csCardTitle: "Agentes de servicio al cliente",
     csCardTag: "Disponible ahora",
@@ -478,79 +520,106 @@ export default function LandingPage() {
   const splitList = (text: string) =>
     text.split("\n").filter((line) => line.trim() !== "");
 
+  const useCaseIcons: Record<string, string> = {
+    "Hotels & short-term rentals": "🏨",
+    "Restaurants & delivery": "🍽️",
+    "Restaurantes & delivery": "🍽️",
+    "Hoteles y rentas cortas": "🏨",
+    "Clinics, dentists & practices": "🩺",
+    "Clínicas, dentistas y consultorios": "🩺",
+    "Retail & e-commerce": "🛍️",
+    "Retail y e-commerce": "🛍️",
+    "Fintech & banking": "💳",
+    "Fintech y banca": "💳",
+    "Public offices": "🏛️",
+    "Oficinas públicas": "🏛️",
+  };
+
+  const handleScrollToUseCases = () => {
+    if (typeof document !== "undefined") {
+      document.getElementById("use-cases")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
-    <div className="space-y-24">
+    <div className="space-y-24 pb-16 px-4 sm:px-6 lg:px-8 md:space-y-32">
       {/* Hero */}
-      <section
-        id="product"
-        className="relative overflow-hidden rounded-3xl border border-slate-200/60 bg-gradient-to-br from-slate-900 via-slate-800 to-onDutyNavy shadow-2xl dark:border-slate-800"
-      >
-        <div className="absolute inset-0 opacity-70">
-          <div className="absolute left-10 top-10 h-40 w-40 rounded-full bg-onDutyGold/40 blur-3xl" />
-          <div className="absolute bottom-10 right-10 h-64 w-64 rounded-full bg-onDutyWine/40 blur-3xl" />
-        </div>
-        <div className="relative grid gap-12 px-6 py-16 md:grid-cols-2 md:py-20 lg:px-12">
-          <div className="space-y-6 text-white">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
-              ALWAYS-ON AI AGENTS
-            </div>
-            <h1 className="text-4xl font-bold leading-tight sm:text-5xl sm:leading-tight">{c.heroTitle}</h1>
-            <p className="max-w-2xl text-lg text-slate-100">{c.heroSubtitle}</p>
-            <div className="flex flex-wrap items-start gap-4 text-sm font-semibold">
-              <div className="flex flex-col gap-1">
-                <PrimaryButton href="/try">{c.heroPrimaryCtaTry}</PrimaryButton>
-                <span className="text-xs font-normal text-slate-100/90">{c.heroPrimaryCtaTrySub}</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <PrimaryButton href="/signup">{c.heroPrimaryCtaSignup}</PrimaryButton>
-                <span className="text-xs font-normal text-slate-100/90">{c.heroPrimaryCtaSignupSub}</span>
-              </div>
-              <Link href="#use-cases" className="inline-flex items-center text-sm font-semibold text-onDutyGold">
-                {c.heroSecondaryLink}
-              </Link>
-            </div>
+      <section className="pt-16 pb-20 md:pt-20 md:pb-28">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-onDutyNavy">
+          <div className="absolute inset-0 opacity-50">
+            <div className="absolute left-10 top-16 h-40 w-40 rounded-full bg-onDutyGold/40 blur-3xl" />
+            <div className="absolute bottom-10 right-10 h-56 w-56 rounded-full bg-onDutyWine/40 blur-3xl" />
           </div>
-
-          <div className="flex items-center justify-center">
-            <div className="w-full max-w-lg rounded-3xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-slate-200">OnDuty Chat</p>
-                  <p className="text-lg font-semibold text-white">Live conversation</p>
-                </div>
-                <span className="rounded-full bg-emerald-100/80 px-3 py-1 text-xs font-semibold text-emerald-800">Online</span>
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 sm:px-6 md:py-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:px-8">
+            <div className="text-white">
+              <div className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-amber-900 dark:bg-amber-900/30 dark:text-amber-200">
+                {lang === "en" ? "Always-on AI agents" : "Agentes de IA siempre de turno"}
               </div>
-
-              <div className="mt-4 grid grid-cols-3 gap-3 text-white">
-                {[{ label: "Conversations", value: "2,341", helper: "last 30 days" }, { label: "CSAT", value: "4.8 / 5", helper: "quick responses" }, { label: "Avg response", value: "1.8s", helper: "24/7 coverage" }].map((stat) => (
-                  <div key={stat.label} className="rounded-2xl border border-white/15 bg-white/10 p-3 shadow-sm">
-                    <p className="text-xs text-slate-200">{stat.label}</p>
-                    <p className="text-xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-slate-300">{stat.helper}</p>
-                  </div>
-                ))}
+              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">{c.heroTitle}</h1>
+              <p className="mt-4 max-w-2xl text-base text-slate-100 md:text-lg">{c.heroSubtitle}</p>
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <PrimaryButton href="/try">{c.heroPrimaryCtaTry}</PrimaryButton>
+                <PrimaryButton href="/signup" className="bg-onDutyWine hover:border-onDutyWine hover:text-onDutyWine">
+                  {c.heroPrimaryCtaSignup}
+                </PrimaryButton>
+                <SecondaryButton
+                  onClick={handleScrollToUseCases}
+                  className="border-white text-white hover:border-onDutyGold hover:bg-onDutyGold hover:text-onDutyNavy"
+                >
+                  {c.heroSecondaryLink}
+                </SecondaryButton>
               </div>
+              <div className="mt-3 grid gap-3 text-xs text-slate-100 sm:grid-cols-2">
+                <p>{c.heroPrimaryCtaTrySub}</p>
+                <p>{c.heroPrimaryCtaSignupSub}</p>
+              </div>
+            </div>
 
-              <div className="mt-6 space-y-3 rounded-2xl border border-white/15 bg-white/10 p-4 shadow-sm text-white">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-onDutyGold text-onDutyNavy">AI</div>
+            <div className="relative">
+              <div className="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-onDutyGold/40 blur-3xl" />
+              <div className="relative rounded-3xl border border-white/15 bg-white/85 p-6 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold">Agent Nova</p>
-                    <p className="text-xs text-slate-200">Realtime responses</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">OnDuty Dashboard</p>
+                    <p className="text-xl font-semibold text-onDutyNavy dark:text-white">Live overview</p>
                   </div>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-100">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+                    {lang === "en" ? "Online" : "En línea"}
+                  </span>
                 </div>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 text-lg">💬</span>
-                    <p className="rounded-2xl bg-white/15 px-4 py-3 text-slate-50 shadow-sm">
-                      We need a last-minute booking for tomorrow night. Can you help?
-                    </p>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  {["Leads captured", "Conversations", "Avg. response"].map((label, idx) => (
+                    <div
+                      key={label}
+                      className="rounded-2xl border border-slate-200/80 bg-white/80 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
+                    >
+                      <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
+                      <p className="text-xl font-semibold text-onDutyNavy dark:text-white">
+                        {idx === 0 ? "2,341" : idx === 1 ? "8,120" : "12s"}
+                      </p>
+                      <p className="text-xs text-emerald-600 dark:text-emerald-300">{idx === 2 ? "↗" : "+28%"}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 space-y-3 rounded-2xl border border-slate-200/80 bg-gradient-to-r from-slate-50 to-white p-4 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/80">
+                  <div className="flex items-start gap-2">
+                    <div className="mt-1 h-2 w-2 rounded-full bg-slate-400" aria-hidden />
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500">Guest</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-200">Hi, can I check in after midnight?</p>
+                    </div>
                   </div>
-                  <div className="ml-auto flex max-w-[85%] items-start gap-3">
-                    <p className="rounded-2xl bg-emerald-100/80 px-4 py-3 text-slate-900 shadow-sm">
-                      Absolutely! I can reserve a queen suite for tomorrow with late check-in. Should I confirm under your name?
-                    </p>
-                    <span className="mt-0.5 text-lg">🤖</span>
+                  <div className="flex items-start gap-2">
+                    <div className="mt-1 h-2 w-2 rounded-full bg-onDutyGold" aria-hidden />
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500">OnDuty Agent</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-200">
+                        Absolutely—late check-in is available. I can also share parking and Wi-Fi info now.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -560,7 +629,7 @@ export default function LandingPage() {
       </section>
 
       {/* Who it's for */}
-      <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <section className="mx-auto max-w-6xl rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         <div className="flex flex-wrap items-center justify-center gap-3 text-sm font-semibold text-onDutyNavy dark:text-white">
           {c.whoForItems.map((label) => (
             <span key={label} className="rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
@@ -571,19 +640,22 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section id="features" className="space-y-6">
+      <section id="features" className="mx-auto max-w-6xl space-y-6">
         <div className="space-y-2">
           <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.howTitle}</h2>
-          <p className="text-lg text-slate-600 dark:text-slate-300">{lang === "en" ? "Connect quickly, teach it your business, and stay in control." : "Conecta rápido, enséñale tu negocio y mantén el control."}</p>
+          <p className="text-lg text-slate-600 dark:text-slate-300">{t.features.subheading}</p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          {c.howSteps.map((item) => (
+          {c.howSteps.map((item, idx) => (
             <div
               key={item.title}
-              className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
+              className="flex h-full flex-col rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/80"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-onDutyGold/70 text-onDutyNavy shadow-sm">✦</div>
-              <h3 className="mt-4 text-lg font-semibold text-onDutyNavy dark:text-white">{item.title}</h3>
+              <div className="flex items-center gap-2 text-xs font-semibold text-onDutyGold">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-onDutyGold/20 text-onDutyNavy">{idx + 1}</span>
+                {lang === "en" ? "Step" : "Paso"} {idx + 1}
+              </div>
+              <p className="mt-2 text-lg font-semibold text-onDutyNavy dark:text-white">{item.title}</p>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.text}</p>
             </div>
           ))}
@@ -591,100 +663,145 @@ export default function LandingPage() {
       </section>
 
       {/* Why OnDuty */}
-      <section className="space-y-6">
+      <section className="mx-auto max-w-6xl space-y-6">
         <div className="space-y-2">
           <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.whyTitle}</h2>
-          <p className="text-lg text-slate-600 dark:text-slate-300">{lang === "en" ? "Reliable coverage, honest analytics, and human-friendly controls." : "Cobertura confiable, analítica útil y controles pensados para personas."}</p>
+          <p className="text-lg text-slate-600 dark:text-slate-300">{t.features.subheading}</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {c.whyFeatures.map((item) => (
             <div
               key={item.title}
-              className="rounded-2xl border border-slate-200 bg-white/90 p-4 text-onDutyNavy shadow-sm transition hover:-translate-y-1 hover:border-onDutyNavy hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+              className="flex h-full flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
             >
-              <p className="text-base font-semibold">{item.title}</p>
-              <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">{item.text}</p>
+              <div className="flex items-center gap-2 text-lg font-semibold text-onDutyNavy dark:text-white">
+                <span aria-hidden className="text-xl">
+                  {item.title.includes("24/7")
+                    ? "🌙"
+                    : item.title.includes("support") || item.title.includes("soporte")
+                      ? "💬"
+                      : item.title.includes("Multi")
+                        ? "🌐"
+                        : item.title.includes("Analytics") || item.title.includes("Analítica")
+                          ? "📊"
+                          : item.title.includes("Human") || item.title.includes("humano")
+                            ? "🤝"
+                            : "🧱"}
+                </span>
+                {item.title}
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{item.text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Use cases preview */}
-      <section id="use-cases" className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.useCasesTitle}</h2>
-            <p className="text-lg text-slate-600 dark:text-slate-300">
-              {lang === "en"
-                ? "Built for teams who can’t afford to miss a message."
-                : "Pensado para equipos que no pueden darse el lujo de perder un mensaje."}
-            </p>
-          </div>
-          <SecondaryButton href="/use-cases" className="hidden md:inline-flex">
-            {lang === "en" ? "Explore all" : "Ver todos"}
-          </SecondaryButton>
+      {/* Use cases */}
+      <section id="use-cases" className="mx-auto max-w-6xl space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.useCasesTitle}</h2>
+          <p className="text-lg text-slate-600 dark:text-slate-300">
+            {lang === "en" ? "Answer the questions that slow you down." : "Responde las dudas que frenan a tus clientes."}
+          </p>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {c.useCases.map((item) => (
             <div
               key={item.title}
-              className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm transition hover:-translate-y-1 hover:border-onDutyNavy hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
+              className="flex h-full flex-col rounded-2xl border border-slate-200/80 bg-white/70 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70"
             >
-              <h3 className="text-lg font-semibold text-onDutyNavy dark:text-white">{item.title}</h3>
-              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                {item.bullets.map((bullet) => (
-                  <li key={bullet} className="flex items-start gap-2">
-                    <span>•</span>
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/use-cases"
-                className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-onDutyNavy transition hover:gap-3 hover:text-onDutyWine dark:text-onDutyGold"
-              >
-                {lang === "en" ? "See details" : "Ver detalles"}
-                <span aria-hidden>→</span>
-              </Link>
+              <span className="mb-3 text-2xl" aria-hidden>
+                {useCaseIcons[item.title] ?? "✨"}
+              </span>
+              <div className="flex-1 space-y-2">
+                <h3 className="text-lg font-semibold text-onDutyNavy dark:text-white">{item.title}</h3>
+                <ul className="space-y-1 text-sm text-slate-600 dark:text-slate-300">
+                  {item.bullets.map((bullet) => (
+                    <li key={bullet} className="flex items-start gap-2">
+                      <span>•</span>
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-4 pt-2">
+                <SecondaryButton href="/use-cases" className="w-full justify-center">
+                  {lang === "en" ? "Explore this use case" : "Ver este caso de uso"}
+                </SecondaryButton>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Analytics & reporting */}
-      <section className="grid gap-8 rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-white p-8 shadow-lg dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 md:grid-cols-2">
-        <div className="space-y-4">
-          <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.analyticsTitle}</h2>
-          <div className="space-y-2 text-base text-slate-700 dark:text-slate-200">
-            {splitList(c.analyticsText).map((line) => (
-              <p key={line}>{line}</p>
-            ))}
+      {/* Analytics */}
+      <section id="analytics" className="py-16 md:py-24">
+        <div className="mx-auto grid max-w-6xl items-start gap-10 px-2 sm:px-0 lg:grid-cols-2">
+          <div>
+            <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.analyticsTitle}</h2>
+            <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">{c.analyticsIntro}</p>
+            <ul className="mt-6 space-y-4">
+              {c.analyticsBullets.map((item) => (
+                <li key={item.title} className="flex gap-3">
+                  <span className="mt-1 text-emerald-500" aria-hidden>
+                    ●
+                  </span>
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-slate-50">{item.title}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">{item.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-inner dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
-            <span>{lang === "en" ? "Workspace overview" : "Resumen del workspace"}</span>
-            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-100">{lang === "en" ? "Live" : "Activo"}</span>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-slate-200 bg-white/90 p-4 text-onDutyNavy shadow-sm dark:border-slate-800 dark:bg-slate-800 dark:text-white">
-              <p className="text-xs text-slate-500 dark:text-slate-300">{lang === "en" ? "Conversations (30d)" : "Conversaciones (30d)"}</p>
-              <p className="text-2xl font-bold">2,341</p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-200">+14% vs prior</p>
+
+          <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-widest text-slate-500">Workspace overview</p>
+                <p className="text-lg font-semibold text-onDutyNavy dark:text-white">Support & activity</p>
+              </div>
+              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+                {lang === "en" ? "Live" : "En vivo"}
+              </span>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white/90 p-4 text-onDutyNavy shadow-sm dark:border-slate-800 dark:bg-slate-800 dark:text-white">
-              <p className="text-xs text-slate-500 dark:text-slate-300">{lang === "en" ? "Resolution rate" : "Tasa de resolución"}</p>
-              <p className="text-2xl font-bold">87%</p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-200">+6 pts</p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {[
+                {
+                  label: lang === "en" ? "Conversations (30d)" : "Conversaciones (30d)",
+                  value: "650",
+                  helper: lang === "en" ? "last 30 days" : "últimos 30 días",
+                },
+                {
+                  label: lang === "en" ? "Resolution rate" : "Tasa de resolución",
+                  value: "94%",
+                  helper: lang === "en" ? "steady" : "estable",
+                },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-slate-200/80 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">{stat.label}</p>
+                  <p className="text-2xl font-semibold text-onDutyNavy dark:text-white">{stat.value}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">{stat.helper}</p>
+                </div>
+              ))}
             </div>
-            <div className="col-span-2 rounded-xl border border-slate-200 bg-white/90 p-4 text-onDutyNavy shadow-sm dark:border-slate-800 dark:bg-slate-800 dark:text-white">
-              <p className="text-xs text-slate-500 dark:text-slate-300">{lang === "en" ? "Busiest hours" : "Horas pico"}</p>
-              <div className="mt-3 flex items-end gap-2">
-                {[40, 70, 55, 85, 65, 45, 30].map((height, idx) => (
-                  <div key={idx} className="w-6 rounded-full bg-onDutyGold/70" style={{ height: `${height}%` }} />
+            <div className="mt-5 space-y-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-sm font-semibold text-onDutyNavy dark:text-white">
+                {lang === "en" ? "Busiest hours" : "Horas pico"}
+              </p>
+              <div className="grid grid-cols-6 gap-2 text-xs text-slate-500 dark:text-slate-300">
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => (
+                  <div key={day} className="space-y-1">
+                    <div
+                      className="h-20 rounded-md bg-gradient-to-t from-slate-200 to-onDutyGold/70 dark:from-slate-800 dark:to-onDutyGold/40"
+                      style={{ height: `${60 + idx * 4}px` }}
+                    />
+                    <p className="text-center">{day}</p>
+                  </div>
                 ))}
               </div>
-              <p className="mt-3 text-xs text-slate-500 dark:text-slate-300">
+              <p className="text-xs text-slate-500 dark:text-slate-300">
                 {lang === "en"
                   ? "Alerts when spikes or suspicious activity happens."
                   : "Alertas cuando hay picos o actividad sospechosa."}
@@ -695,7 +812,7 @@ export default function LandingPage() {
       </section>
 
       {/* Customer service vs sales */}
-      <section className="space-y-6">
+      <section className="mx-auto max-w-6xl space-y-6">
         <div className="space-y-2">
           <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.csVsSalesTitle}</h2>
           <p className="text-lg text-slate-600 dark:text-slate-300">
@@ -739,7 +856,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="space-y-6">
+      <section id="pricing" className="mx-auto max-w-6xl space-y-6">
         <div className="space-y-2">
           <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.pricingTitle}</h2>
           <p className="text-lg text-slate-600 dark:text-slate-300">{c.pricingSubtitle}</p>
@@ -748,7 +865,7 @@ export default function LandingPage() {
           {c.pricingPlans.map((plan) => (
             <div
               key={plan.id}
-              className={`flex h-full flex-col rounded-2xl border p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg${
+              className={`flex h-full flex-col rounded-3xl border p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg${
                 plan.popular
                   ? " border-onDutyGold bg-white/90 dark:border-onDutyGold dark:bg-slate-900"
                   : " border-slate-200 bg-white/90 dark:border-slate-800 dark:bg-slate-900"
@@ -772,15 +889,18 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              {plan.ctaLabel ? (
-                <SecondaryButton href="mailto:hello@alwaysonduty.ai" className="mt-6 justify-center">
-                  {plan.ctaLabel}
-                </SecondaryButton>
-              ) : (
-                <PrimaryButton href={`/signup?plan=${plan.id}`} className="mt-6 justify-center">
-                  {c.heroPrimaryCtaSignup}
-                </PrimaryButton>
-              )}
+              <div className="mt-6 pt-4 border-t border-slate-200/70 dark:border-slate-800" />
+              <div className="mt-4">
+                {plan.ctaLabel ? (
+                  <SecondaryButton href="mailto:hello@alwaysonduty.ai" className="w-full justify-center">
+                    {plan.ctaLabel}
+                  </SecondaryButton>
+                ) : (
+                  <PrimaryButton href={`/signup?plan=${plan.id}`} className="w-full justify-center">
+                    {c.heroPrimaryCtaSignup}
+                  </PrimaryButton>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -810,7 +930,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="space-y-6">
+      <section className="mx-auto max-w-6xl space-y-6">
         <div className="space-y-2">
           <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.faqTitle}</h2>
           <p className="text-lg text-slate-600 dark:text-slate-300">
@@ -828,7 +948,7 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="rounded-3xl border border-slate-200 bg-gradient-to-r from-onDutyNavy to-onDutyWine p-8 text-white shadow-xl dark:border-slate-800">
+      <section className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-gradient-to-r from-onDutyNavy to-onDutyWine p-8 text-white shadow-xl dark:border-slate-800">
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.2em] text-onDutyGold">Always-on coverage</p>
@@ -848,7 +968,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 pt-8 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-300">
+      <footer className="mx-auto max-w-6xl border-t border-slate-200 pt-8 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-300">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} OnDuty. All rights reserved.</p>
           <div className="flex items-center gap-4">
