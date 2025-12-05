@@ -764,11 +764,16 @@ export default function LandingPage() {
 
       {/* Use cases */}
       <section id="use-cases" className="mx-auto max-w-6xl space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.useCasesTitle}</h2>
-          <p className="text-lg text-slate-600 dark:text-slate-300">
-            {lang === "en" ? "Answer the questions that slow you down." : "Responde las dudas que frenan a tus clientes."}
-          </p>
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-semibold text-onDutyNavy dark:text-white">{c.useCasesTitle}</h2>
+            <p className="text-lg text-slate-600 dark:text-slate-300">
+              {lang === "en" ? "Answer the questions that slow you down." : "Responde las dudas que frenan a tus clientes."}
+            </p>
+          </div>
+          <SecondaryButton href="/use-cases" className="w-full justify-center md:w-auto">
+            {lang === "en" ? "See all use cases" : "Ver todos los casos de uso"}
+          </SecondaryButton>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {c.useCases.map((item) => (
