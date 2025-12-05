@@ -1,0 +1,33 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { PrimaryButton } from "../../../components/Buttons";
+
+export default function BillingCancelledPage() {
+  const router = useRouter();
+  const [hasToken, setHasToken] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setHasToken(!!localStorage.getItem("on_duty_token"));
+    }
+  }, []);
+
+  const destination = hasToken ? "/dashboard" : "/";
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-4 rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-onDutyGold">Billing</p>
+        <h1 className="text-3xl font-semibold text-onDutyNavy dark:text-white">Checkout cancelled</h1>
+        <p className="text-slate-600 dark:text-slate-300">
+          No charges were made. You can restart the checkout whenever you’re ready.
+        </p>
+      </div>
+      <PrimaryButton onClick={() => router.push(destination)} className="justify-center">
+        {hasToken ? "Back to dashboard" : "Back to home"}
+      </PrimaryButton>
+    </div>
+  );
+}
