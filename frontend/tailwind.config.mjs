@@ -13,15 +13,6 @@ export default {
         onDutyWine: "#3B0B2F",
         onDutyGold: "#FACC15",
       },
-      keyframes: {
-        marquee: {
-          "0%": { transform: "translateX(0%)" },
-          "100%": { transform: "translateX(-50%)" },
-        },
-      },
-      animation: {
-        marquee: "marquee 30s linear infinite",
-      },
     },
   },
   plugins: [],

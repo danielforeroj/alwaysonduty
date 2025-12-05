@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { PrimaryButton, SecondaryButton } from "../components/Buttons";
-import LogoMarquee from "../components/LogoMarquee";
 import { useCopy } from "../lib/copy";
 import { getUseCaseList } from "../lib/useCases";
 import { useLanguage } from "../components/providers/LanguageProvider";
@@ -97,8 +96,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      <LogoMarquee />
 
       {/* Features */}
       <section id="features" className="space-y-6">
