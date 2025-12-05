@@ -10,9 +10,7 @@
   },
   "overrides": {
     "rimraf": "^5.0.10",
-    "glob": "^10.4.5",
-    "@humanwhocodes/config-array": "^0.14.4",
-    "@humanwhocodes/object-schema": "^2.1.4"
+    "glob": "^10.4.5"
   },
   "dependencies": {
     "next": "14.2.5",
