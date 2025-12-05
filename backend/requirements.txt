@@ -8,3 +8,4 @@ passlib[bcrypt]
 resend
 psycopg2-binary
 stripe
+email-validator
