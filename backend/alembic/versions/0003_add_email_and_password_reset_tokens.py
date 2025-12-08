@@ -2,7 +2,7 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision = "0003_add_email_and_password_reset_tokens"
+revision = "0003_email_pw_tokens"
 down_revision = "0002_add_billing_fields"
 branch_labels = None
 depends_on = None

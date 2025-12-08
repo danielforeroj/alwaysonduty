@@ -6,7 +6,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "0004_rename_metadata_columns"
-down_revision = "0003_add_email_and_password_reset_tokens"
+down_revision = "0003_email_pw_tokens"
 branch_labels = None
 depends_on = None
 
