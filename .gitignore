@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+.env
+venv/
+.env.*
+!.env.example
+!backend/.env.example
+
+# Node
+node_modules/
+.next/
+.env.local
+!frontend/.env.local.example
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Alembic
+backend/alembic/versions/*.pyc
