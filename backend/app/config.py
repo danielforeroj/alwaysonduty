@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     frontend_base_url: str = Field("http://localhost:3000", env="FRONTEND_BASE_URL")
     resend_api_key: Optional[str] = Field(None, env="RESEND_API_KEY")
     resend_from_email: Optional[str] = Field(None, env="RESEND_FROM_EMAIL")
+    groq_api_key: Optional[str] = Field(None, env="GROQ_API_KEY")
+    groq_default_model: str = Field("llama-3.1-70b", env="GROQ_DEFAULT_MODEL")
 
     class Config:
         env_file = ".env"
