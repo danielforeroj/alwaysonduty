@@ -77,7 +77,7 @@ const defaultAllowedWebsite = (): AllowedWebsite => ({
 
 export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
   const router = useRouter();
-  const { token, logout } = useAuth();
+  const { token, logout, tenant } = useAuth();
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [name, setName] = useState("OnDuty Assistant");
@@ -96,6 +96,18 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const planDisplayLabel = (() => {
+    const labelMap: Record<string, string> = {
+      starter: "Basic",
+      growth: "Growth",
+      premium: "Premium",
+    };
+    if (tenant?.plan_type && labelMap[tenant.plan_type]) {
+      return labelMap[tenant.plan_type];
+    }
+    return "Growth";
+  })();
 
   useEffect(() => {
     if (initialAgent) {
@@ -355,17 +367,19 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
           </button>
           <button
             type="button"
-            onClick={() => setAgentType("sales")}
-            className={`flex-1 rounded-lg border p-3 text-left text-sm transition ${
+            disabled
+            className={`relative flex-1 rounded-lg border p-3 text-left text-sm transition ${
               agentType === "sales"
-                ? "border-black bg-black text-white"
-                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                ? "border-gray-300 bg-gray-100 text-gray-500"
+                : "border-gray-200 bg-white text-gray-400"
             }`}
           >
             <div className="font-medium">Sales</div>
-            <div className="mt-1 text-xs text-gray-300 md:text-gray-200">
-              Capture and qualify leads, book calls, and keep the pipeline moving.
-            </div>
+            <div className="mt-1 text-xs text-gray-500">Capture and qualify leads, book calls, and keep the pipeline moving.</div>
+            <span className="mt-2 inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
+              Coming soon
+            </span>
+            <span className="pointer-events-none absolute inset-0 rounded-lg" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -374,10 +388,13 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
         <section className="rounded-lg border bg-slate-50 p-4">
           <h4 className="text-sm font-semibold text-gray-900">Customer Service plans</h4>
           <p className="mt-1 text-xs text-gray-600">
-            These plans cover support agents that handle inbound customer conversations. Start on a trial and upgrade when you’re ready.
+            Plan selection happened when your account was created. This section is a reminder of what’s included in your current coverage. Manage changes from Billing.
           </p>
+          <div className="mt-2 inline-flex rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
+            Current plan: {planDisplayLabel}
+          </div>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <div className="rounded-md bg-white p-3 text-xs shadow-sm">
+            <div className={`rounded-md bg-white p-3 text-xs shadow-sm ${planDisplayLabel === "Basic" ? "border border-black" : ""}`}>
               <div className="flex items-baseline justify-between">
                 <span className="font-semibold">Basic</span>
                 <span className="text-gray-500">$20 / month</span>
@@ -391,7 +408,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
               </ul>
             </div>
 
-            <div className="rounded-md border border-black bg-white p-3 text-xs shadow-sm">
+            <div className={`rounded-md bg-white p-3 text-xs shadow-sm ${planDisplayLabel === "Growth" ? "border border-black" : ""}`}>
               <div className="flex items-baseline justify-between">
                 <span className="font-semibold">Growth</span>
                 <span className="text-gray-500">$40 / month</span>
@@ -406,7 +423,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
               </ul>
             </div>
 
-            <div className="rounded-md bg-white p-3 text-xs shadow-sm">
+            <div className={`rounded-md bg-white p-3 text-xs shadow-sm ${planDisplayLabel === "Premium" ? "border border-black" : ""}`}>
               <div className="flex items-baseline justify-between">
                 <span className="font-semibold">Premium</span>
                 <span className="text-gray-500">$60 / month</span>
@@ -421,7 +438,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
               </ul>
             </div>
 
-            <div className="rounded-md bg-white p-3 text-xs shadow-sm">
+            <div className={`rounded-md bg-white p-3 text-xs shadow-sm ${planDisplayLabel === "Enterprise" ? "border border-black" : ""}`}>
               <div className="flex items-baseline justify-between">
                 <span className="font-semibold">Enterprise</span>
                 <span className="text-gray-500">Contact us</span>
