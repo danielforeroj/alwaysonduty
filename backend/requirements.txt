@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic>=1.10,<2.0
+alembic
+python-jose[cryptography]
+# keep passlib aligned with bcrypt 3.x to avoid __about__ attribute errors during hashing
+passlib[bcrypt]==1.7.4
+# bcrypt 4.x removes the __about__ attribute passlib relies on; pin to 3.x to avoid hashing errors
+bcrypt==3.2.2
+resend
+psycopg2-binary
+stripe
+email-validator
