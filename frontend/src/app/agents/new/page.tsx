@@ -6,7 +6,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { AgentWizard } from "@/components/agents/AgentWizard";
 
 export default function NewAgentPage() {
-  const { token, authLoading } = useAuth();
+  const { token, loading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {

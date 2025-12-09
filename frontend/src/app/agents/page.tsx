@@ -9,7 +9,7 @@ import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
 
 export default function AgentsPage() {
   const router = useRouter();
-  const { token, authLoading, logout } = useAuth();
+  const { token, loading: authLoading, logout } = useAuth();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

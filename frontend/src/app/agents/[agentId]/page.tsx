@@ -10,7 +10,7 @@ import { AgentWizard } from "@/components/agents/AgentWizard";
 export default function EditAgentPage() {
   const params = useParams();
   const router = useRouter();
-  const { token, authLoading, logout } = useAuth();
+  const { token, loading: authLoading, logout } = useAuth();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
