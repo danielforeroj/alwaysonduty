@@ -64,6 +64,7 @@ def create_agent(
         name=payload.name,
         slug=slug,
         status=payload.status,
+        agent_type=payload.agent_type,
         job_and_company_profile=payload.job_and_company_profile.dict(),
         customer_profile=payload.customer_profile.dict(),
         data_profile=payload.data_profile.dict() if payload.data_profile else None,
@@ -119,6 +120,8 @@ def update_agent(
         agent.name = payload.name
     if payload.status is not None:
         agent.status = payload.status
+    if payload.agent_type is not None:
+        agent.agent_type = payload.agent_type
     if payload.job_and_company_profile is not None:
         agent.job_and_company_profile = payload.job_and_company_profile.dict()
     if payload.customer_profile is not None:

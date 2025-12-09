@@ -6,6 +6,7 @@ import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
 import { useAuth } from "@/components/providers/AuthProvider";
 import {
   Agent,
+  AgentType,
   AllowedWebsite,
   CustomerProfile,
   CustomerSegment,
@@ -82,6 +83,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
   const [name, setName] = useState("OnDuty Assistant");
   const [slug, setSlug] = useState("");
   const [status, setStatus] = useState<Agent["status"]>("draft");
+  const [agentType, setAgentType] = useState<AgentType>("customer_service");
 
   const [jobProfile, setJobProfile] = useState<JobAndCompanyProfile>(defaultJobAndCompany());
   const [customerProfile, setCustomerProfile] = useState<CustomerProfile>(defaultCustomerProfile());
@@ -100,6 +102,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       setName(initialAgent.name);
       setSlug(initialAgent.slug);
       setStatus(initialAgent.status);
+      setAgentType(initialAgent.agent_type ?? "customer_service");
       setJobProfile({
         ...defaultJobAndCompany(),
         ...initialAgent.job_and_company_profile,
@@ -219,11 +222,18 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
     setSaveMessage(null);
     setError(null);
 
+    const jobProfileForPayload: JobAndCompanyProfile = {
+      ...jobProfile,
+      environment_primary: "web_widget",
+      environment_future: [],
+    };
+
     const payload = {
       name,
       slug,
       status,
-      job_and_company_profile: jobProfile,
+      agent_type: agentType,
+      job_and_company_profile: jobProfileForPayload,
       customer_profile: customerProfile,
       data_profile: dataProfile && dataProfile.strategy_notes === "" && (dataProfile.authoritative_doc_ids?.length ?? 0) === 0 && dataProfile.out_of_date_notes === "" ? null : dataProfile,
       allowed_websites: allowedWebsites && allowedWebsites.length > 0 ? allowedWebsites : null,
@@ -316,6 +326,127 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
 
   const renderStep1 = () => (
     <div className="space-y-4">
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold">Know your company & job</h3>
+        <p className="text-sm text-gray-500">
+          Choose what kind of agent you’re creating and share the basics about your business.
+        </p>
+      </div>
+
+      <div className="rounded-lg border bg-white p-4">
+        <h4 className="text-sm font-medium text-gray-900">Agent type</h4>
+        <p className="mt-1 text-xs text-gray-500">
+          Pick the focus for this agent. We’ll tailor the setup questions accordingly.
+        </p>
+        <div className="mt-3 flex flex-col gap-2 md:flex-row">
+          <button
+            type="button"
+            onClick={() => setAgentType("customer_service")}
+            className={`flex-1 rounded-lg border p-3 text-left text-sm transition ${
+              agentType === "customer_service"
+                ? "border-black bg-black text-white"
+                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            <div className="font-medium">Customer Service</div>
+            <div className="mt-1 text-xs text-gray-300 md:text-gray-200">
+              Handle FAQs, resolve issues, and keep CSAT high around the clock.
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setAgentType("sales")}
+            className={`flex-1 rounded-lg border p-3 text-left text-sm transition ${
+              agentType === "sales"
+                ? "border-black bg-black text-white"
+                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            <div className="font-medium">Sales</div>
+            <div className="mt-1 text-xs text-gray-300 md:text-gray-200">
+              Capture and qualify leads, book calls, and keep the pipeline moving.
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {agentType === "customer_service" && (
+        <section className="rounded-lg border bg-slate-50 p-4">
+          <h4 className="text-sm font-semibold text-gray-900">Customer Service plans</h4>
+          <p className="mt-1 text-xs text-gray-600">
+            These plans cover support agents that handle inbound customer conversations. Start on a trial and upgrade when you’re ready.
+          </p>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="rounded-md bg-white p-3 text-xs shadow-sm">
+              <div className="flex items-baseline justify-between">
+                <span className="font-semibold">Basic</span>
+                <span className="text-gray-500">$20 / month</span>
+              </div>
+              <ul className="mt-2 space-y-1 text-gray-700">
+                <li>Up to 200 conversations / month</li>
+                <li>1 workspace, 1 brand or location</li>
+                <li>1 admin seat</li>
+                <li>Hosted chat page + simple embed</li>
+                <li>Basic analytics & weekly email report</li>
+              </ul>
+            </div>
+
+            <div className="rounded-md border border-black bg-white p-3 text-xs shadow-sm">
+              <div className="flex items-baseline justify-between">
+                <span className="font-semibold">Growth</span>
+                <span className="text-gray-500">$40 / month</span>
+              </div>
+              <p className="mt-1 text-[11px] uppercase tracking-wide text-emerald-600">Most popular</p>
+              <ul className="mt-2 space-y-1 text-gray-700">
+                <li>Up to 500 conversations / month</li>
+                <li>1 workspace, up to 2 brands/locations</li>
+                <li>Up to 3 admin seats</li>
+                <li>Advanced analytics + saved replies & FAQ library</li>
+                <li>Weekly and monthly email reports</li>
+              </ul>
+            </div>
+
+            <div className="rounded-md bg-white p-3 text-xs shadow-sm">
+              <div className="flex items-baseline justify-between">
+                <span className="font-semibold">Premium</span>
+                <span className="text-gray-500">$60 / month</span>
+              </div>
+              <ul className="mt-2 space-y-1 text-gray-700">
+                <li>Up to 1000 conversations / month</li>
+                <li>1 workspace, up to 3 brands/locations</li>
+                <li>Up to 5 admin seats</li>
+                <li>Deeper analytics & alerts</li>
+                <li>Weekly, monthly & quarterly email reports</li>
+                <li>Priority support</li>
+              </ul>
+            </div>
+
+            <div className="rounded-md bg-white p-3 text-xs shadow-sm">
+              <div className="flex items-baseline justify-between">
+                <span className="font-semibold">Enterprise</span>
+                <span className="text-gray-500">Contact us</span>
+              </div>
+              <ul className="mt-2 space-y-1 text-gray-700">
+                <li>Custom volume (1000+ conversations / month)</li>
+                <li>Flexible brands and locations</li>
+                <li>Dedicated onboarding & data setup</li>
+                <li>Security review & custom SLAs</li>
+                <li>Early access to new channels (e.g. WhatsApp)</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {agentType === "sales" && (
+        <section className="rounded-lg border bg-slate-50 p-4">
+          <h4 className="text-sm font-semibold text-gray-900">Sales agents</h4>
+          <p className="mt-1 text-xs text-gray-600">
+            Sales agents focus on capturing leads, qualifying opportunities, and booking calls or demos. Pricing and limits are separate from Customer Service plans.
+          </p>
+        </section>
+      )}
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Agent name</label>
         <input
@@ -442,27 +573,30 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
 
       <div className="space-y-2">
         <p className="text-sm font-medium text-gray-700">Environment</p>
-        <div className="flex items-center gap-2 text-sm">
-          <input type="radio" checked disabled />
-          <span>Web widget (current)</span>
-        </div>
-        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-          {["whatsapp", "telegram", "email", "internal_tools"].map((channel) => (
-            <label key={channel} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={jobProfile.environment_future.includes(channel as JobAndCompanyProfile["environment_future"][number])}
-                onChange={(e) => {
-                  const exists = jobProfile.environment_future.includes(channel as JobAndCompanyProfile["environment_future"][number]);
-                  const next = exists
-                    ? jobProfile.environment_future.filter((c) => c !== channel)
-                    : [...jobProfile.environment_future, channel as JobAndCompanyProfile["environment_future"][number]];
-                  setJobProfile({ ...jobProfile, environment_future: next });
-                }}
-              />
-              <span className="capitalize">{channel.replace(/_/g, " ")} (coming soon)</span>
-            </label>
-          ))}
+        <p className="text-xs text-gray-500">
+          For now, your agent will live in a web chat widget hosted by OnDuty. Additional channels are on the way.
+        </p>
+        <div className="flex flex-wrap gap-2 text-xs">
+          <div className="flex items-center gap-2 rounded-full bg-black px-3 py-1 text-white">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span>Web widget (current)</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-dashed border-gray-300 px-3 py-1 text-gray-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
+            <span>WhatsApp (coming soon)</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-dashed border-gray-300 px-3 py-1 text-gray-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
+            <span>Telegram (coming soon)</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-dashed border-gray-300 px-3 py-1 text-gray-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
+            <span>Email (coming soon)</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-dashed border-gray-300 px-3 py-1 text-gray-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
+            <span>Internal tools (coming soon)</span>
+          </div>
         </div>
       </div>
 
@@ -813,6 +947,9 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
             <p className="text-lg font-semibold">{name}</p>
           </div>
           <span className="rounded-full bg-gray-100 px-3 py-1 text-xs capitalize text-gray-700">{status}</span>
+        </div>
+        <div className="mt-1 text-xs uppercase tracking-wide text-gray-500">
+          Type: {agentType === "customer_service" ? "Customer Service" : "Sales"}
         </div>
         <div className="mt-2 text-sm text-gray-600">Goal: {jobProfile.primary_goal}</div>
         <div className="text-sm text-gray-600">Success: {jobProfile.success_metrics.join(", ") || "Not specified"}</div>

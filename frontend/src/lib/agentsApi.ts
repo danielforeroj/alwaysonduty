@@ -1,4 +1,4 @@
-import { Agent, KnowledgeDocumentMetadata } from "@/types/agent";
+import { Agent, AgentType, KnowledgeDocumentMetadata } from "@/types/agent";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -41,6 +41,7 @@ type AgentPayload = {
   name: string;
   slug: string;
   status: "draft" | "active" | "disabled";
+  agent_type: AgentType;
   job_and_company_profile: Agent["job_and_company_profile"];
   customer_profile: Agent["customer_profile"];
   data_profile?: Agent["data_profile"] | null;

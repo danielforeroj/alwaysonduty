@@ -4,6 +4,9 @@ from pydantic import BaseModel, HttpUrl, Field
 from datetime import datetime
 
 
+AgentType = Literal["customer_service", "sales"]
+
+
 # ---------- Step 1: Job + Company ----------
 
 class JobAndCompanyProfile(BaseModel):
@@ -134,6 +137,7 @@ class AgentBase(BaseModel):
     name: str
     slug: str
     status: Literal["draft", "active", "disabled"] = "draft"
+    agent_type: AgentType = "customer_service"
 
     job_and_company_profile: JobAndCompanyProfile
     customer_profile: CustomerProfile
@@ -148,6 +152,7 @@ class AgentCreate(AgentBase):
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
     status: Optional[Literal["draft", "active", "disabled"]] = None
+    agent_type: Optional[AgentType] = None
 
     job_and_company_profile: Optional[JobAndCompanyProfile] = None
     customer_profile: Optional[CustomerProfile] = None

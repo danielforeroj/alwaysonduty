@@ -17,6 +17,12 @@ class Agent(Base):
     slug = Column(String(120), nullable=False, unique=True)
 
     status = Column(String(20), nullable=False, default="draft")  # draft | active | disabled
+    # Type of agent: customer service vs sales
+    agent_type = Column(
+        String(20),
+        nullable=False,
+        default="customer_service",  # customer_service | sales
+    )
 
     # For later: which provider/model this agent uses
     model_provider = Column(String(50), nullable=False, default="groq")

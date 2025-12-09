@@ -1,4 +1,5 @@
 export type AgentStatus = "draft" | "active" | "disabled";
+export type AgentType = "customer_service" | "sales";
 
 export interface JobAndCompanyProfile {
   agent_name: string;
@@ -95,6 +96,7 @@ export interface Agent {
   name: string;
   slug: string;
   status: AgentStatus;
+  agent_type: AgentType;
   model_provider: string;
   model_name: string;
   training_mode: string;
