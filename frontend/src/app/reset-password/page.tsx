@@ -13,6 +13,7 @@ function ResetPasswordForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [configError, setConfigError] = useState<string | null>(
     API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
   );
@@ -31,6 +32,7 @@ function ResetPasswordForm() {
       return;
     }
     try {
+      setIsSubmitting(true);
       const res = await fetch(`${base}/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,6 +46,8 @@ function ResetPasswordForm() {
       setTimeout(() => router.push("/login"), 1200);
     } catch (err: any) {
       setError(err.message || "Something went wrong");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -84,10 +88,17 @@ function ResetPasswordForm() {
         {message && <p className="text-sm text-green-600">{message}</p>}
         <button
           type="submit"
-          disabled={!!configError}
-          className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white shadow hover:bg-slate-800 disabled:opacity-50 dark:hover:bg-slate-700"
+          disabled={!!configError || isSubmitting}
+          className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white shadow transition hover:bg-slate-800 disabled:opacity-50 dark:hover:bg-slate-700"
         >
-          Update password
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2 text-sm">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-white" aria-hidden />
+              Updating…
+            </span>
+          ) : (
+            "Update password"
+          )}
         </button>
       </form>
     </div>
