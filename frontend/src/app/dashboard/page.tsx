@@ -9,6 +9,8 @@ import {
   DashboardMetrics,
   EMPTY_METRICS,
   SAMPLE_METRICS,
+  ClientAnalytics,
+  SAMPLE_CLIENT_ANALYTICS,
 } from "../../types/dashboard";
 import { SecondaryButton } from "@/components/Buttons";
 
@@ -19,6 +21,11 @@ export default function DashboardPage() {
   const { token, user, tenant, loading: authLoading, logout } = useAuth();
   const [dashboard, setDashboard] = useState<DashboardMetrics>(EMPTY_METRICS);
   const [showSampleData, setShowSampleData] = useState(false);
+  const [clientAnalytics, setClientAnalytics] = useState<ClientAnalytics | null>(null);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+  const [analyticsTab, setAnalyticsTab] = useState<"overview" | "drilldown">("overview");
+  const [selectedConversation, setSelectedConversation] =
+    useState<ClientAnalytics["drilldown"]["conversations"][number] | null>(null);
   const [configError, setConfigError] = useState<string | null>(
     API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
   );
@@ -64,6 +71,16 @@ export default function DashboardPage() {
     fetchDashboard();
   }, [authLoading, router, token, logout]);
 
+  useEffect(() => {
+    if (showSampleData) {
+      setClientAnalytics(SAMPLE_CLIENT_ANALYTICS);
+      setAnalyticsError(null);
+    } else {
+      setClientAnalytics(null);
+      setAnalyticsError(null);
+    }
+  }, [showSampleData]);
+
   const formatDate = (value?: string | null) => {
     if (!value) return null;
     const date = new Date(value);
@@ -82,12 +99,23 @@ export default function DashboardPage() {
     ? SAMPLE_METRICS
     : dashboard || EMPTY_METRICS;
 
+  const effectiveAnalytics: ClientAnalytics | null = showSampleData
+    ? SAMPLE_CLIENT_ANALYTICS
+    : clientAnalytics;
+
+  const hasAnalytics = Boolean(effectiveAnalytics);
+  const channelLabel = (channel: "web" | "whatsapp" | "telegram") => {
+    if (channel === "web") return "Web widget";
+    if (channel === "whatsapp") return "WhatsApp (coming soon)";
+    if (channel === "telegram") return "Telegram (coming soon)";
+    return channel;
+  };
+
   const trialEnds = formatDate(effectiveMetrics.plan.trial_ends_at || null);
 
   const planName = effectiveMetrics.plan.name ? effectiveMetrics.plan.name : "starter";
   const channelBreakdown = effectiveMetrics.breakdown.conversations_by_channel || [];
   const totalByChannel = channelBreakdown.reduce((acc, item) => acc + item.count, 0);
-  const usageSeries = effectiveMetrics.timeseries.daily_conversations_last_30_days.slice(-7) || [];
 
   const usageCards = (
     <div className="grid gap-4 md:grid-cols-2">
@@ -198,92 +226,353 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-3">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Analytics</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300">
-                  Explore live performance or switch to sample data to preview a busy month.
-                </p>
-              </div>
-              <SecondaryButton
-                type="button"
-                className="px-3 py-2 text-xs"
-                onClick={() => setShowSampleData((prev) => !prev)}
-              >
-                {showSampleData ? "Back to live data" : "Show sample data"}
-              </SecondaryButton>
-            </div>
-
-            {showSampleData && (
-              <div className="rounded-md border border-dashed border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
-                Demo mode: You’re viewing <strong>sample analytics</strong> for a busy month. This data isn’t from your account.
-              </div>
-            )}
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-900/70">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Usage over time</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Conversations in the last 30 days</p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Daily conversations over the last 30 days. Spikes often match campaigns or busier business days.
-                </p>
-                <div className="mt-4 space-y-3">
-                  {usageSeries.length === 0 && (
-                    <p className="text-sm text-slate-500">No conversations yet.</p>
-                  )}
-                {usageSeries.map((item) => {
-                  const max = Math.max(...usageSeries.map((d) => d.count), 1);
-                  const width = `${Math.max((item.count / max) * 100, 8)}%`;
-                  return (
-                    <div key={item.date} className="space-y-1">
-                      <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
-                        <span>{new Date(item.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
-                        <span>{item.count}</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800">
-                        <div
-                          className="h-2 rounded-full bg-onDutyNavy dark:bg-onDutyGold"
-                          style={{ width }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-              <div className="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-900/70">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">By channel</h3>
-                <p className="mt-1 text-xs text-slate-500">
-                  Distribution of conversations by channel. Web is live; WhatsApp/Telegram are shown as coming soon for planning.
-                </p>
-                <div className="mt-4 space-y-3">
-                  {channelBreakdown.length === 0 && (
-                    <p className="text-sm text-slate-500">No channel activity yet.</p>
-                  )}
-                  {channelBreakdown.map((item) => {
-                    const basePercentage = totalByChannel
-                      ? Math.round((item.count / totalByChannel) * 100)
-                      : 0;
-                    const percentage = item.percentage ?? basePercentage;
-                    return (
-                      <div
-                        key={item.channel}
-                        className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="inline-block h-2 w-2 rounded-full bg-onDutyNavy dark:bg-onDutyGold" aria-hidden />
-                          <span className="capitalize">{item.channel}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-                          <span>{item.count}</span>
-                          <span className="text-slate-400">•</span>
-                          <span>{percentage}%</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+            <div className="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-900/70">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Analytics</h3>
+                  <p className="text-xs text-slate-500">
+                    Understand how your OnDuty agents are performing with your customers.
+                  </p>
                 </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="inline-flex rounded-full border bg-slate-50 p-1 text-xs dark:border-slate-700 dark:bg-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setAnalyticsTab("overview")}
+                      className={`rounded-full px-3 py-1 transition ${
+                        analyticsTab === "overview"
+                          ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50"
+                          : "text-slate-600 dark:text-slate-300"
+                      }`}
+                    >
+                      Overview
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAnalyticsTab("drilldown")}
+                      className={`rounded-full px-3 py-1 transition ${
+                        analyticsTab === "drilldown"
+                          ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50"
+                          : "text-slate-600 dark:text-slate-300"
+                      }`}
+                    >
+                      Drill-down
+                    </button>
+                  </div>
+                  <SecondaryButton
+                    type="button"
+                    className="px-3 py-2 text-xs"
+                    onClick={() => setShowSampleData((prev) => !prev)}
+                  >
+                    {showSampleData ? "Back to live data" : "Show sample data"}
+                  </SecondaryButton>
+                </div>
+              </div>
+
+              {showSampleData && (
+                <div className="mt-3 rounded-md border border-dashed border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900">
+                  Demo mode: You’re viewing <strong>sample analytics</strong> only. Real-time analytics will appear here as your
+                  agents handle conversations.
+                </div>
+              )}
+
+              {analyticsError && (
+                <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-xs text-red-800">
+                  {analyticsError}
+                </div>
+              )}
+
+              {analyticsTab === "overview" && (
+                <div className="mt-6 space-y-6">
+                  {!hasAnalytics && !showSampleData && (
+                    <p className="text-xs text-slate-500">
+                      We’ll start showing analytics as soon as your agents handle conversations. Toggle sample data to preview
+                      what a busy month looks like.
+                    </p>
+                  )}
+                  {hasAnalytics && effectiveAnalytics && (
+                    <>
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                          <p className="text-xs uppercase text-slate-500">Total conversations</p>
+                          <p className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
+                            {effectiveAnalytics.overview.totalConversations}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Total unique conversations this month. Helps you understand traffic volume.
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                          <p className="text-xs uppercase text-slate-500">Sales vs support</p>
+                          <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+                            {effectiveAnalytics.overview.salesConversations} sales / {effectiveAnalytics.overview.supportConversations} support
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Breakdown of conversations tagged as sales vs support so you can see where OnDuty creates value.
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                          <p className="text-xs uppercase text-slate-500">Response time</p>
+                          <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+                            {effectiveAnalytics.overview.avgFirstResponseSeconds}s first reply
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Average time it takes your agent to send the first reply. Faster = happier customers.
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                          <p className="text-xs uppercase text-slate-500">Resolution rate</p>
+                          <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+                            {Math.round((effectiveAnalytics.overview.resolutionRate || 0) * 100)}%
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Percentage of conversations successfully resolved. Track impact on your support quality.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 lg:grid-cols-2">
+                        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                          <h4 className="text-base font-semibold text-slate-900 dark:text-slate-50">Most common questions</h4>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Topics customers ask the most. Helps you refine FAQs and agent prompts.
+                          </p>
+                          <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                            {effectiveAnalytics.overview.mostCommonQuestions.map((item) => (
+                              <li key={item.question} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800/80">
+                                <span>{item.question}</span>
+                                <span className="text-xs text-slate-500">{item.count}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                          <h4 className="text-base font-semibold text-slate-900 dark:text-slate-50">Most common complaints</h4>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Issues that trigger complaints. Use this to improve operations and messaging.
+                          </p>
+                          <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                            {effectiveAnalytics.overview.mostCommonComplaints.map((item) => (
+                              <li key={item.category} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800/80">
+                                <span>{item.category}</span>
+                                <span className="text-xs text-slate-500">{item.count}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 lg:grid-cols-3">
+                        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                          <h4 className="text-base font-semibold text-slate-900 dark:text-slate-50">Most requested services</h4>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Top products/services your customers ask about. Helps you decide where to focus upsells.
+                          </p>
+                          <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                            {effectiveAnalytics.overview.mostRequestedProducts.map((item) => (
+                              <li key={item.name} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800/80">
+                                <span>{item.name}</span>
+                                <span className="text-xs text-slate-500">{item.count}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                          <h4 className="text-base font-semibold text-slate-900 dark:text-slate-50">Peak conversation times</h4>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Hours with the most conversations. Use this to staff your team or schedule campaigns.
+                          </p>
+                          <div className="mt-3 space-y-2">
+                            {effectiveAnalytics.overview.peakHours.map((hour) => {
+                              const max = Math.max(...effectiveAnalytics.overview.peakHours.map((p) => p.conversations), 1);
+                              const width = `${Math.max((hour.conversations / max) * 100, 8)}%`;
+                              return (
+                                <div key={hour.hourLabel} className="space-y-1">
+                                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                                    <span>{hour.hourLabel}</span>
+                                    <span>{hour.conversations}</span>
+                                  </div>
+                                  <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800">
+                                    <div className="h-2 rounded-full bg-onDutyNavy dark:bg-onDutyGold" style={{ width }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                          <h4 className="text-base font-semibold text-slate-900 dark:text-slate-50">Languages</h4>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Language distribution across conversations. Useful for multilingual support decisions.
+                          </p>
+                          <ul className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                            {effectiveAnalytics.overview.languages.map((lang) => (
+                              <li key={lang.code} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800/80">
+                                <span>{lang.label}</span>
+                                <span className="text-xs text-slate-500">{lang.percentage}%</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+                        <h4 className="text-base font-semibold text-slate-900 dark:text-slate-50">Customer satisfaction</h4>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Customer satisfaction based on post-chat feedback. Higher scores usually correlate with faster,
+                          accurate responses.
+                        </p>
+                        <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_2fr]">
+                          <div className="rounded-xl bg-slate-50 p-4 text-center dark:bg-slate-800/80">
+                            <p className="text-xs uppercase text-slate-500">Average score</p>
+                            <p className="text-3xl font-semibold text-slate-900 dark:text-slate-50">
+                              {effectiveAnalytics.overview.customerSatisfaction.avgScore.toFixed(1)} / 5
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            {effectiveAnalytics.overview.customerSatisfaction.distribution.map((row) => {
+                              const width = `${row.percentage}%`;
+                              return (
+                                <div key={row.score} className="space-y-1">
+                                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                                    <span>{row.score} star</span>
+                                    <span>{row.percentage}%</span>
+                                  </div>
+                                  <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800">
+                                    <div className="h-2 rounded-full bg-onDutyWine" style={{ width }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {analyticsTab === "drilldown" && (
+                <div className="mt-6 space-y-4">
+                  {!hasAnalytics && !showSampleData && (
+                    <p className="text-xs text-slate-500">
+                      We’ll show drill-down analytics once conversations start flowing. Try sample data to see the experience.
+                    </p>
+                  )}
+                  {hasAnalytics && effectiveAnalytics && (
+                    <>
+                      <div className="rounded-xl bg-slate-50 px-4 py-3 text-xs text-slate-700 dark:bg-slate-800/80 dark:text-slate-200">
+                        <p className="font-medium text-slate-900 dark:text-slate-50">This week’s insight</p>
+                        <p>{effectiveAnalytics.drilldown.weeklyInsight}</p>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        Drill into individual conversations to understand intent, satisfaction, and where your OnDuty agent is
+                        creating (or losing) value.
+                      </p>
+                      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+                        <div className="max-h-[420px] overflow-auto">
+                          <table className="min-w-full text-left text-xs text-slate-700 dark:text-slate-200">
+                            <thead className="bg-slate-50 text-slate-500 dark:bg-slate-800/70">
+                              <tr>
+                                <th className="px-4 py-2">Date</th>
+                                <th className="px-4 py-2">Customer</th>
+                                <th className="px-4 py-2">Channel</th>
+                                <th className="px-4 py-2">Region</th>
+                                <th className="px-4 py-2">Intent</th>
+                                <th className="px-4 py-2">Lead status</th>
+                                <th className="px-4 py-2">CSAT</th>
+                                <th className="px-4 py-2">First response</th>
+                                <th className="px-4 py-2">Resolution</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {effectiveAnalytics.drilldown.conversations.map((conv) => (
+                                <tr
+                                  key={conv.id}
+                                  className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/60"
+                                  onClick={() => setSelectedConversation(conv)}
+                                >
+                                  <td className="px-4 py-2">
+                                    {new Date(conv.date).toLocaleString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                    })}
+                                  </td>
+                                  <td className="px-4 py-2">{conv.customerName}</td>
+                                  <td className="px-4 py-2">{channelLabel(conv.channel)}</td>
+                                  <td className="px-4 py-2">{conv.region} / {conv.country}</td>
+                                  <td className="px-4 py-2 capitalize">{conv.intent}</td>
+                                  <td className="px-4 py-2 capitalize">{conv.leadStatus.replace("_", " ")}</td>
+                                  <td className="px-4 py-2">{conv.csatScore ?? "-"}</td>
+                                  <td className="px-4 py-2">{conv.firstResponseSeconds}s</td>
+                                  <td className="px-4 py-2">{conv.resolutionMinutes ? `${conv.resolutionMinutes}m` : "-"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {selectedConversation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" role="dialog" aria-modal>
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm uppercase text-slate-500">Conversation insight</p>
+                <h4 className="text-xl font-semibold text-slate-900 dark:text-slate-50">{selectedConversation.customerName}</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {channelLabel(selectedConversation.channel)} • {selectedConversation.region} / {selectedConversation.country}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="text-sm text-slate-500 hover:text-slate-800"
+                onClick={() => setSelectedConversation(null)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+              <p className="font-medium">Summary</p>
+              <p>{selectedConversation.summary}</p>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl bg-slate-50 p-4 text-sm dark:bg-slate-800/80">
+                <p className="text-xs uppercase text-slate-500">Intent</p>
+                <p className="font-medium capitalize">{selectedConversation.intent}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4 text-sm dark:bg-slate-800/80">
+                <p className="text-xs uppercase text-slate-500">Lead status</p>
+                <p className="font-medium capitalize">{selectedConversation.leadStatus.replace("_", " ")}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4 text-sm dark:bg-slate-800/80">
+                <p className="text-xs uppercase text-slate-500">First response</p>
+                <p className="font-medium">{selectedConversation.firstResponseSeconds}s</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4 text-sm dark:bg-slate-800/80">
+                <p className="text-xs uppercase text-slate-500">Resolution</p>
+                <p className="font-medium">{selectedConversation.resolutionMinutes ? `${selectedConversation.resolutionMinutes}m` : "-"}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4 text-sm dark:bg-slate-800/80">
+                <p className="text-xs uppercase text-slate-500">CSAT</p>
+                <p className="font-medium">{selectedConversation.csatScore ?? "Not provided"}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4 text-sm dark:bg-slate-800/80">
+                <p className="text-xs uppercase text-slate-500">AI insight</p>
+                <p>
+                  This {selectedConversation.intent} conversation from {selectedConversation.country} had a
+                  {selectedConversation.csatScore && selectedConversation.csatScore <= 3 ? " low" : " good"} satisfaction score.
+                  Consider updating your {selectedConversation.intent === "complaint" ? "support flows" : "FAQ"} around this topic.
+                </p>
               </div>
             </div>
           </div>

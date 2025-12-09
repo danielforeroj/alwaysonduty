@@ -38,6 +38,52 @@ export interface DashboardMetrics {
   };
 }
 
+export interface ClientAnalyticsOverview {
+  totalConversations: number;
+  salesConversations: number;
+  supportConversations: number;
+  avgFirstResponseSeconds: number;
+  avgResolutionMinutes: number;
+  resolutionRate: number; // 0–1
+  mostCommonQuestions: { question: string; count: number }[];
+  mostCommonComplaints: { category: string; count: number }[];
+  mostRequestedProducts: { name: string; count: number }[];
+  peakHours: { hourLabel: string; conversations: number }[];
+  languages: { code: string; label: string; percentage: number }[];
+  customerSatisfaction: {
+    avgScore: number;
+    distribution: { score: number; percentage: number }[];
+  };
+}
+
+export type ClientAnalyticsChannel = "web" | "whatsapp" | "telegram";
+
+export interface ClientAnalyticsConversation {
+  id: string;
+  date: string; // ISO string
+  customerName: string;
+  channel: ClientAnalyticsChannel;
+  region: string;
+  country: string;
+  language: string;
+  intent: "booking" | "inquiry" | "complaint" | "support" | "sales";
+  summary: string;
+  leadStatus: "new" | "qualified" | "won" | "lost" | "existing_customer";
+  csatScore?: number;
+  firstResponseSeconds: number;
+  resolutionMinutes?: number;
+}
+
+export interface ClientAnalyticsDrillDown {
+  conversations: ClientAnalyticsConversation[];
+  weeklyInsight: string;
+}
+
+export interface ClientAnalytics {
+  overview: ClientAnalyticsOverview;
+  drilldown: ClientAnalyticsDrillDown;
+}
+
 export const EMPTY_METRICS: DashboardMetrics = {
   plan: {
     name: "starter",
@@ -119,6 +165,317 @@ export const SAMPLE_METRICS: DashboardMetrics = {
       { channel: "Web (widget)", count: 610, percentage: 81 },
       { channel: "WhatsApp (coming soon)", count: 90, percentage: 12 },
       { channel: "Telegram (coming soon)", count: 46, percentage: 7 },
+    ],
+  },
+};
+
+export const SAMPLE_CLIENT_ANALYTICS: ClientAnalytics = {
+  overview: {
+    totalConversations: 746,
+    salesConversations: 312,
+    supportConversations: 434,
+    avgFirstResponseSeconds: 24,
+    avgResolutionMinutes: 7,
+    resolutionRate: 0.86,
+    mostCommonQuestions: [
+      { question: "What are your business hours?", count: 129 },
+      { question: "Do you offer home delivery?", count: 97 },
+      { question: "What is the price for [service]?", count: 81 },
+      { question: "How soon can I book?", count: 64 },
+      { question: "Is there a cancellation fee?", count: 48 },
+    ],
+    mostCommonComplaints: [
+      { category: "Delayed delivery", count: 32 },
+      { category: "Wrong order", count: 19 },
+      { category: "Payment issues", count: 11 },
+    ],
+    mostRequestedProducts: [
+      { name: "Premium Support Plan", count: 64 },
+      { name: "Express Delivery", count: 51 },
+      { name: "Extended Warranty", count: 37 },
+    ],
+    peakHours: [
+      { hourLabel: "9–10 AM", conversations: 41 },
+      { hourLabel: "10–11 AM", conversations: 58 },
+      { hourLabel: "3–4 PM", conversations: 72 },
+      { hourLabel: "8–9 PM", conversations: 53 },
+    ],
+    languages: [
+      { code: "es", label: "Spanish", percentage: 62 },
+      { code: "en", label: "English", percentage: 31 },
+      { code: "pt", label: "Portuguese", percentage: 7 },
+    ],
+    customerSatisfaction: {
+      avgScore: 4.4,
+      distribution: [
+        { score: 5, percentage: 58 },
+        { score: 4, percentage: 24 },
+        { score: 3, percentage: 12 },
+        { score: 2, percentage: 4 },
+        { score: 1, percentage: 2 },
+      ],
+    },
+  },
+  drilldown: {
+    weeklyInsight:
+      "Most customers this week asked about delivery times and order status. Consider adding a delivery tracker link to your confirmation messages and website FAQ.",
+    conversations: [
+      {
+        id: "1",
+        date: "2025-11-10T14:23:00Z",
+        customerName: "María G.",
+        channel: "web",
+        region: "LATAM",
+        country: "Colombia",
+        language: "es",
+        intent: "booking",
+        summary: "Customer asked about availability and booked a table for 4 on Friday.",
+        leadStatus: "won",
+        csatScore: 5,
+        firstResponseSeconds: 12,
+        resolutionMinutes: 3,
+      },
+      {
+        id: "2",
+        date: "2025-11-10T16:02:00Z",
+        customerName: "John P.",
+        channel: "web",
+        region: "US",
+        country: "United States",
+        language: "en",
+        intent: "complaint",
+        summary:
+          "Customer reported a delayed shipment and asked for an update and partial refund.",
+        leadStatus: "existing_customer",
+        csatScore: 3,
+        firstResponseSeconds: 27,
+        resolutionMinutes: 14,
+      },
+      {
+        id: "3",
+        date: "2025-11-11T09:11:00Z",
+        customerName: "Luisa R.",
+        channel: "web",
+        region: "LATAM",
+        country: "Mexico",
+        language: "es",
+        intent: "sales",
+        summary: "Asked about enterprise pricing and requested a demo.",
+        leadStatus: "qualified",
+        csatScore: 4,
+        firstResponseSeconds: 18,
+        resolutionMinutes: 6,
+      },
+      {
+        id: "4",
+        date: "2025-11-11T17:44:00Z",
+        customerName: "Pedro S.",
+        channel: "web",
+        region: "LATAM",
+        country: "Chile",
+        language: "es",
+        intent: "support",
+        summary: "Requested help resetting account password and updating billing info.",
+        leadStatus: "existing_customer",
+        csatScore: 4,
+        firstResponseSeconds: 22,
+        resolutionMinutes: 11,
+      },
+      {
+        id: "5",
+        date: "2025-11-12T12:08:00Z",
+        customerName: "Nina K.",
+        channel: "web",
+        region: "EU",
+        country: "Germany",
+        language: "en",
+        intent: "inquiry",
+        summary: "Asked if the product supports multi-language for storefronts.",
+        leadStatus: "qualified",
+        csatScore: 5,
+        firstResponseSeconds: 16,
+        resolutionMinutes: 7,
+      },
+      {
+        id: "6",
+        date: "2025-11-12T19:15:00Z",
+        customerName: "Carlos M.",
+        channel: "web",
+        region: "LATAM",
+        country: "Peru",
+        language: "es",
+        intent: "support",
+        summary: "Asked about delivery ETA for an order placed yesterday.",
+        leadStatus: "existing_customer",
+        csatScore: 3,
+        firstResponseSeconds: 20,
+        resolutionMinutes: 15,
+      },
+      {
+        id: "7",
+        date: "2025-11-13T08:55:00Z",
+        customerName: "Ana L.",
+        channel: "whatsapp",
+        region: "LATAM",
+        country: "Argentina",
+        language: "es",
+        intent: "sales",
+        summary: "Asked for bulk pricing for 50 seats.",
+        leadStatus: "qualified",
+        csatScore: 4,
+        firstResponseSeconds: 14,
+        resolutionMinutes: 6,
+      },
+      {
+        id: "8",
+        date: "2025-11-13T21:17:00Z",
+        customerName: "Sara B.",
+        channel: "telegram",
+        region: "EU",
+        country: "Spain",
+        language: "es",
+        intent: "complaint",
+        summary: "Reported incorrect order details in confirmation email.",
+        leadStatus: "existing_customer",
+        csatScore: 2,
+        firstResponseSeconds: 28,
+        resolutionMinutes: 18,
+      },
+      {
+        id: "9",
+        date: "2025-11-14T13:30:00Z",
+        customerName: "Emily W.",
+        channel: "web",
+        region: "US",
+        country: "United States",
+        language: "en",
+        intent: "booking",
+        summary: "Booked a last-minute reservation for two and asked about parking.",
+        leadStatus: "won",
+        csatScore: 5,
+        firstResponseSeconds: 10,
+        resolutionMinutes: 4,
+      },
+      {
+        id: "10",
+        date: "2025-11-14T22:40:00Z",
+        customerName: "Marco D.",
+        channel: "whatsapp",
+        region: "LATAM",
+        country: "Brazil",
+        language: "pt",
+        intent: "inquiry",
+        summary: "Asked if support is available in Portuguese and overnight shipping options.",
+        leadStatus: "new",
+        csatScore: 4,
+        firstResponseSeconds: 19,
+        resolutionMinutes: 9,
+      },
+      {
+        id: "11",
+        date: "2025-11-15T11:03:00Z",
+        customerName: "Laura H.",
+        channel: "web",
+        region: "EU",
+        country: "United Kingdom",
+        language: "en",
+        intent: "support",
+        summary: "Asked about refund status and timelines for a returned item.",
+        leadStatus: "existing_customer",
+        csatScore: 3,
+        firstResponseSeconds: 25,
+        resolutionMinutes: 16,
+      },
+      {
+        id: "12",
+        date: "2025-11-15T15:18:00Z",
+        customerName: "Victor R.",
+        channel: "web",
+        region: "LATAM",
+        country: "Colombia",
+        language: "es",
+        intent: "support",
+        summary: "Asked to change delivery address after checkout.",
+        leadStatus: "existing_customer",
+        csatScore: 4,
+        firstResponseSeconds: 13,
+        resolutionMinutes: 12,
+      },
+      {
+        id: "13",
+        date: "2025-11-16T09:46:00Z",
+        customerName: "Sophia T.",
+        channel: "web",
+        region: "US",
+        country: "United States",
+        language: "en",
+        intent: "sales",
+        summary: "Inquired about integrating the agent with her Shopify store.",
+        leadStatus: "qualified",
+        csatScore: 5,
+        firstResponseSeconds: 11,
+        resolutionMinutes: 5,
+      },
+      {
+        id: "14",
+        date: "2025-11-16T18:02:00Z",
+        customerName: "Diego P.",
+        channel: "telegram",
+        region: "LATAM",
+        country: "Argentina",
+        language: "es",
+        intent: "complaint",
+        summary: "Complained about missing order items and requested replacements.",
+        leadStatus: "existing_customer",
+        csatScore: 2,
+        firstResponseSeconds: 26,
+        resolutionMinutes: 21,
+      },
+      {
+        id: "15",
+        date: "2025-11-17T07:58:00Z",
+        customerName: "Isabel C.",
+        channel: "web",
+        region: "LATAM",
+        country: "Colombia",
+        language: "es",
+        intent: "booking",
+        summary: "Reserved a private room for a team dinner and asked about AV setup.",
+        leadStatus: "won",
+        csatScore: 5,
+        firstResponseSeconds: 9,
+        resolutionMinutes: 6,
+      },
+      {
+        id: "16",
+        date: "2025-11-17T20:22:00Z",
+        customerName: "Omar N.",
+        channel: "web",
+        region: "MEA",
+        country: "UAE",
+        language: "en",
+        intent: "support",
+        summary: "Asked about invoice reissue with VAT details.",
+        leadStatus: "existing_customer",
+        csatScore: 4,
+        firstResponseSeconds: 17,
+        resolutionMinutes: 10,
+      },
+      {
+        id: "17",
+        date: "2025-11-18T14:12:00Z",
+        customerName: "Yuki A.",
+        channel: "web",
+        region: "APAC",
+        country: "Japan",
+        language: "en",
+        intent: "inquiry",
+        summary: "Asked about delivery windows during holidays.",
+        leadStatus: "new",
+        csatScore: 4,
+        firstResponseSeconds: 20,
+        resolutionMinutes: 8,
+      },
     ],
   },
 };
