@@ -348,7 +348,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       <div className="rounded-lg border bg-white p-4">
         <h4 className="text-sm font-medium text-gray-900">Agent type</h4>
         <p className="mt-1 text-xs text-gray-500">
-          Pick the focus for this agent. We’ll tailor the setup questions accordingly.
+          Customer Service agents are available today. Sales agents are coming soon.
         </p>
         <div className="mt-3 flex flex-col gap-2 md:flex-row">
           <button
@@ -368,14 +368,10 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
           <button
             type="button"
             disabled
-            className={`relative flex-1 rounded-lg border p-3 text-left text-sm transition ${
-              agentType === "sales"
-                ? "border-gray-300 bg-gray-100 text-gray-500"
-                : "border-gray-200 bg-white text-gray-400"
-            }`}
+            className="relative flex-1 rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3 text-left text-sm text-gray-400"
           >
             <div className="font-medium">Sales</div>
-            <div className="mt-1 text-xs text-gray-500">Capture and qualify leads, book calls, and keep the pipeline moving.</div>
+            <div className="mt-1 text-xs text-gray-500">Sales agents are coming soon.</div>
             <span className="mt-2 inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
               Coming soon
             </span>
@@ -386,7 +382,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
 
       {agentType === "customer_service" && (
         <section className="rounded-lg border bg-slate-50 p-4">
-          <h4 className="text-sm font-semibold text-gray-900">Customer Service plans</h4>
+          <h4 className="text-sm font-semibold text-gray-900">Customer Service plan</h4>
           <p className="mt-1 text-xs text-gray-600">
             Your Customer Service plan was selected when your account was created. This is a reminder of your current coverage. Manage any changes from Billing.
           </p>
@@ -397,15 +393,6 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
             <div className="text-sm font-semibold text-gray-900">{planDisplayLabel}</div>
             <p className="text-xs text-gray-600">Manage plan and billing from the Billing section.</p>
           </div>
-        </section>
-      )}
-
-      {agentType === "sales" && (
-        <section className="rounded-lg border bg-slate-50 p-4">
-          <h4 className="text-sm font-semibold text-gray-900">Sales agents</h4>
-          <p className="mt-1 text-xs text-gray-600">
-            Sales agents focus on capturing leads, qualifying opportunities, and booking calls or demos. Pricing and limits are separate from Customer Service plans.
-          </p>
         </section>
       )}
 
@@ -450,20 +437,25 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
             className="mt-1 w-full rounded-md border px-3 py-2"
           />
         </div>
-        <div>
+        <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700">Mission</label>
-          <input
+          <textarea
             value={jobProfile.mission || ""}
             onChange={(e) => setJobProfile({ ...jobProfile, mission: e.target.value })}
             className="mt-1 w-full rounded-md border px-3 py-2"
+            rows={3}
           />
         </div>
-        <div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="md:col-span-3">
           <label className="block text-sm font-medium text-gray-700">Vision</label>
-          <input
+          <textarea
             value={jobProfile.vision || ""}
             onChange={(e) => setJobProfile({ ...jobProfile, vision: e.target.value })}
             className="mt-1 w-full rounded-md border px-3 py-2"
+            rows={3}
           />
         </div>
       </div>
@@ -480,7 +472,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       <div className="space-y-2">
         <p className="text-sm font-medium text-gray-700">Primary goal</p>
         <div className="grid gap-2 md:grid-cols-2">
-          {["reduce_support_load", "increase_sales", "qualify_leads", "internal_assistant", "other"].map((goal) => (
+          {["reduce_support_load", "internal_assistant", "other"].map((goal) => (
             <label key={goal} className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
@@ -669,12 +661,24 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700">Languages</label>
-          <input
-            value={customerProfile.languages.join(", ")}
-            onChange={(e) => setCustomerProfile({ ...customerProfile, languages: e.target.value.split(",").map((v) => v.trim()).filter(Boolean) })}
-            placeholder="en, es, pt"
-            className="mt-1 w-full rounded-md border px-3 py-2"
-          />
+          <div className="mt-2 space-y-2">
+            {["english", "spanish", "portuguese"].map((lang) => (
+              <label key={lang} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={customerProfile.languages.includes(lang)}
+                  onChange={() => {
+                    const exists = customerProfile.languages.includes(lang);
+                    const next = exists
+                      ? customerProfile.languages.filter((l) => l !== lang)
+                      : [...customerProfile.languages, lang];
+                    setCustomerProfile({ ...customerProfile, languages: next });
+                  }}
+                />
+                <span className="capitalize">{lang}</span>
+              </label>
+            ))}
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Tone style</label>
