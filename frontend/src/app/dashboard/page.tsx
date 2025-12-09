@@ -10,6 +10,7 @@ import {
   EMPTY_METRICS,
   SAMPLE_METRICS,
   ClientAnalytics,
+  EMPTY_CLIENT_ANALYTICS,
   SAMPLE_CLIENT_ANALYTICS,
 } from "../../types/dashboard";
 import { SecondaryButton } from "@/components/Buttons";
@@ -21,7 +22,7 @@ export default function DashboardPage() {
   const { token, user, tenant, loading: authLoading, logout } = useAuth();
   const [dashboard, setDashboard] = useState<DashboardMetrics>(EMPTY_METRICS);
   const [showSampleData, setShowSampleData] = useState(false);
-  const [clientAnalytics, setClientAnalytics] = useState<ClientAnalytics | null>(null);
+  const [clientAnalytics, setClientAnalytics] = useState<ClientAnalytics>(EMPTY_CLIENT_ANALYTICS);
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
   const [analyticsTab, setAnalyticsTab] = useState<"overview" | "drilldown">("overview");
   const [selectedConversation, setSelectedConversation] =
@@ -76,7 +77,7 @@ export default function DashboardPage() {
       setClientAnalytics(SAMPLE_CLIENT_ANALYTICS);
       setAnalyticsError(null);
     } else {
-      setClientAnalytics(null);
+      setClientAnalytics(EMPTY_CLIENT_ANALYTICS);
       setAnalyticsError(null);
     }
   }, [showSampleData]);
@@ -99,7 +100,7 @@ export default function DashboardPage() {
     ? SAMPLE_METRICS
     : dashboard || EMPTY_METRICS;
 
-  const effectiveAnalytics: ClientAnalytics | null = showSampleData
+  const effectiveAnalytics: ClientAnalytics = showSampleData
     ? SAMPLE_CLIENT_ANALYTICS
     : clientAnalytics;
 

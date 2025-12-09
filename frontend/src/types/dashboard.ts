@@ -84,6 +84,103 @@ export interface ClientAnalytics {
   drilldown: ClientAnalyticsDrillDown;
 }
 
+export const EMPTY_CLIENT_ANALYTICS: ClientAnalytics = {
+  overview: {
+    totalConversations: 0,
+    salesConversations: 0,
+    supportConversations: 0,
+    avgFirstResponseSeconds: 0,
+    avgResolutionMinutes: 0,
+    resolutionRate: 0,
+    mostCommonQuestions: [
+      { question: "question 1", count: 0 },
+      { question: "question 2", count: 0 },
+      { question: "question 3", count: 0 },
+    ],
+    mostCommonComplaints: [
+      { category: "complaint 1", count: 0 },
+      { category: "complaint 2", count: 0 },
+      { category: "complaint 3", count: 0 },
+    ],
+    mostRequestedProducts: [
+      { name: "product 1", count: 0 },
+      { name: "product 2", count: 0 },
+      { name: "product 3", count: 0 },
+    ],
+    peakHours: [
+      { hourLabel: "9–10 AM", conversations: 0 },
+      { hourLabel: "10–11 AM", conversations: 0 },
+      { hourLabel: "3–4 PM", conversations: 0 },
+    ],
+    languages: [
+      { code: "es", label: "Spanish", percentage: 0 },
+      { code: "en", label: "English", percentage: 0 },
+      { code: "pt", label: "Portuguese", percentage: 0 },
+    ],
+    customerSatisfaction: {
+      avgScore: 0,
+      distribution: [
+        { score: 5, percentage: 0 },
+        { score: 4, percentage: 0 },
+        { score: 3, percentage: 0 },
+        { score: 2, percentage: 0 },
+        { score: 1, percentage: 0 },
+      ],
+    },
+  },
+  drilldown: {
+    weeklyInsight:
+      "No real analytics yet. These placeholders will update once your agents start handling conversations.",
+    conversations: [
+      {
+        id: "placeholder-1",
+        date: "2025-01-01T00:00:00Z",
+        customerName: "Customer 1",
+        channel: "web",
+        region: "LATAM",
+        country: "Colombia",
+        language: "es",
+        intent: "support",
+        summary: "Placeholder conversation summary.",
+        leadStatus: "existing_customer",
+        csatScore: 0,
+        firstResponseSeconds: 0,
+        resolutionMinutes: 0,
+      },
+      {
+        id: "placeholder-2",
+        date: "2025-01-02T00:00:00Z",
+        customerName: "Customer 2",
+        channel: "web",
+        region: "US",
+        country: "United States",
+        language: "en",
+        intent: "sales",
+        summary: "Placeholder sales inquiry summary.",
+        leadStatus: "qualified",
+        csatScore: 0,
+        firstResponseSeconds: 0,
+        resolutionMinutes: 0,
+      },
+      {
+        id: "placeholder-3",
+        date: "2025-01-03T00:00:00Z",
+        customerName: "Customer 3",
+        channel: "web",
+        region: "EU",
+        country: "Spain",
+        language: "es",
+        intent: "complaint",
+        summary: "Placeholder complaint summary.",
+        leadStatus: "new",
+        csatScore: 0,
+        firstResponseSeconds: 0,
+        resolutionMinutes: 0,
+      },
+    ],
+  },
+};
+
 export const EMPTY_METRICS: DashboardMetrics = {
   plan: {
     name: "starter",
