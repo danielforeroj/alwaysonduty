@@ -5,3 +5,5 @@ from .message import Message  # noqa: F401
 from .tenant import Tenant  # noqa: F401
 from .token import EmailVerificationToken, PasswordResetToken  # noqa: F401
 from .user import User  # noqa: F401
+from .agent import Agent  # noqa: F401
+from .agent_document import AgentDocument  # noqa: F401

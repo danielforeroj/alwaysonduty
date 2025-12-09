@@ -12,3 +12,6 @@ resend
 psycopg2-binary
 stripe
 email-validator
+python-multipart
+
+groq
