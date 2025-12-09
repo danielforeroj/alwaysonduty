@@ -59,3 +59,5 @@ GET /health -> {"status": "ok"}
 - JWT settings and database URLs are only loaded from environment variables; no secrets are committed.
 - The demo webchat endpoint returns a stubbed AI reply for now.
 - Dependencies pin Pydantic below version 2 to match the current settings import style.
+- `bcrypt` is pinned to a 3.x release because `passlib` expects the legacy `__about__` metadata; redeploy/reinstall after pull
+  to ensure the correct wheel is used.
