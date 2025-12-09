@@ -388,69 +388,14 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
         <section className="rounded-lg border bg-slate-50 p-4">
           <h4 className="text-sm font-semibold text-gray-900">Customer Service plans</h4>
           <p className="mt-1 text-xs text-gray-600">
-            Plan selection happened when your account was created. This section is a reminder of what’s included in your current coverage. Manage changes from Billing.
+            Your Customer Service plan was selected when your account was created. This is a reminder of your current coverage. Manage any changes from Billing.
           </p>
-          <div className="mt-2 inline-flex rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
-            Current plan: {planDisplayLabel}
-          </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <div className={`rounded-md bg-white p-3 text-xs shadow-sm ${planDisplayLabel === "Basic" ? "border border-black" : ""}`}>
-              <div className="flex items-baseline justify-between">
-                <span className="font-semibold">Basic</span>
-                <span className="text-gray-500">$20 / month</span>
-              </div>
-              <ul className="mt-2 space-y-1 text-gray-700">
-                <li>Up to 200 conversations / month</li>
-                <li>1 workspace, 1 brand or location</li>
-                <li>1 admin seat</li>
-                <li>Hosted chat page + simple embed</li>
-                <li>Basic analytics & weekly email report</li>
-              </ul>
+          <div className="mt-3 inline-flex items-center gap-3 rounded-lg bg-white px-4 py-3 shadow-sm">
+            <div className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
+              Current plan
             </div>
-
-            <div className={`rounded-md bg-white p-3 text-xs shadow-sm ${planDisplayLabel === "Growth" ? "border border-black" : ""}`}>
-              <div className="flex items-baseline justify-between">
-                <span className="font-semibold">Growth</span>
-                <span className="text-gray-500">$40 / month</span>
-              </div>
-              <p className="mt-1 text-[11px] uppercase tracking-wide text-emerald-600">Most popular</p>
-              <ul className="mt-2 space-y-1 text-gray-700">
-                <li>Up to 500 conversations / month</li>
-                <li>1 workspace, up to 2 brands/locations</li>
-                <li>Up to 3 admin seats</li>
-                <li>Advanced analytics + saved replies & FAQ library</li>
-                <li>Weekly and monthly email reports</li>
-              </ul>
-            </div>
-
-            <div className={`rounded-md bg-white p-3 text-xs shadow-sm ${planDisplayLabel === "Premium" ? "border border-black" : ""}`}>
-              <div className="flex items-baseline justify-between">
-                <span className="font-semibold">Premium</span>
-                <span className="text-gray-500">$60 / month</span>
-              </div>
-              <ul className="mt-2 space-y-1 text-gray-700">
-                <li>Up to 1000 conversations / month</li>
-                <li>1 workspace, up to 3 brands/locations</li>
-                <li>Up to 5 admin seats</li>
-                <li>Deeper analytics & alerts</li>
-                <li>Weekly, monthly & quarterly email reports</li>
-                <li>Priority support</li>
-              </ul>
-            </div>
-
-            <div className={`rounded-md bg-white p-3 text-xs shadow-sm ${planDisplayLabel === "Enterprise" ? "border border-black" : ""}`}>
-              <div className="flex items-baseline justify-between">
-                <span className="font-semibold">Enterprise</span>
-                <span className="text-gray-500">Contact us</span>
-              </div>
-              <ul className="mt-2 space-y-1 text-gray-700">
-                <li>Custom volume (1000+ conversations / month)</li>
-                <li>Flexible brands and locations</li>
-                <li>Dedicated onboarding & data setup</li>
-                <li>Security review & custom SLAs</li>
-                <li>Early access to new channels (e.g. WhatsApp)</li>
-              </ul>
-            </div>
+            <div className="text-sm font-semibold text-gray-900">{planDisplayLabel}</div>
+            <p className="text-xs text-gray-600">Manage plan and billing from the Billing section.</p>
           </div>
         </section>
       )}
