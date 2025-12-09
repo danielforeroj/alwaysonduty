@@ -2,6 +2,7 @@
 
 // NOTE: This is the main tenant dashboard component (confirmed).
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../components/providers/AuthProvider";
@@ -13,7 +14,7 @@ import {
   EMPTY_CLIENT_ANALYTICS,
   SAMPLE_CLIENT_ANALYTICS,
 } from "../../types/dashboard";
-import { SecondaryButton } from "@/components/Buttons";
+import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -191,6 +192,20 @@ export default function DashboardPage() {
             )}
             {trialEnds && <p className="text-slate-600 dark:text-slate-300">Trial ends: {trialEnds}</p>}
           </div>
+
+          <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+              <div>
+                <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50">Spin up your first AI Agent</h2>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  Configure an OnDuty assistant to handle FAQs, capture leads, and route conversations to your team — 24/7.
+                </p>
+              </div>
+              <Link href="/agents/new" className="w-full md:w-auto">
+                <PrimaryButton className="w-full justify-center md:w-auto">Create AI Agent</PrimaryButton>
+              </Link>
+            </div>
+          </section>
 
           {usageCards}
 
