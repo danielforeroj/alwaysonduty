@@ -2,6 +2,7 @@
 
 import { FormEvent, Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "../../components/providers/AuthProvider";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -11,6 +12,7 @@ type TrialMode = "with_card" | "no_card";
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setAuth } = useAuth();
   const initialPlan = useMemo<PlanType>(() => {
     const plan = (searchParams?.get("plan") as PlanType | null) || "starter";
     return ["starter", "growth", "premium"].includes(plan) ? plan : "starter";
@@ -24,14 +26,17 @@ function SignupForm() {
   const [configError, setConfigError] = useState<string | null>(
     API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
   );
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSubmitting(true);
     const base = API_BASE;
     if (!base) {
       console.error("NEXT_PUBLIC_API_BASE_URL is not set. Cannot sign up.");
       setConfigError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      setSubmitting(false);
       return;
     }
     try {
@@ -44,7 +49,7 @@ function SignupForm() {
       if (!res.ok) {
         throw new Error(data?.detail || "Signup failed");
       }
-      localStorage.setItem("on_duty_token", data.access_token);
+      setAuth(data);
 
       if (trialMode === "no_card") {
         router.push("/dashboard");
@@ -66,6 +71,8 @@ function SignupForm() {
       window.location.href = checkoutData.checkout_url;
     } catch (err: any) {
       setError(err.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -157,10 +164,10 @@ function SignupForm() {
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
-          disabled={!!configError}
+          disabled={!!configError || submitting}
           className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-50"
         >
-          Create account
+          {submitting ? "Creating..." : "Create account"}
         </button>
       </form>
     </div>

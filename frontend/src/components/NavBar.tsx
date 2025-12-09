@@ -5,12 +5,14 @@ import { useMemo, useState } from "react";
 import { useLanguage } from "./providers/LanguageProvider";
 import { useTheme } from "./providers/ThemeProvider";
 import { PrimaryButton, SecondaryButton } from "./Buttons";
+import { useAuth } from "./providers/AuthProvider";
 import { useCopy } from "../lib/copy";
 
 export default function NavBar() {
   const [open, setOpen] = useState(false);
   const { language, setLanguage, toggleLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { token, logout } = useAuth();
   const t = useCopy();
 
   const navLinks = useMemo(
@@ -79,10 +81,22 @@ export default function NavBar() {
             )}
           </button>
 
-          <SecondaryButton href="/login">{t.nav.login}</SecondaryButton>
-          <PrimaryButton href="/signup" className="hidden lg:inline-flex">
-            {t.nav.signup}
-          </PrimaryButton>
+          {!token && (
+            <>
+              <SecondaryButton href="/login">{t.nav.login}</SecondaryButton>
+              <PrimaryButton href="/signup" className="hidden lg:inline-flex">
+                {t.nav.signup}
+              </PrimaryButton>
+            </>
+          )}
+          {token && (
+            <>
+              <SecondaryButton href="/dashboard">Dashboard</SecondaryButton>
+              <PrimaryButton onClick={logout} className="hidden lg:inline-flex">
+                Logout
+              </PrimaryButton>
+            </>
+          )}
         </div>
 
         <button
@@ -138,10 +152,26 @@ export default function NavBar() {
             >
               <span>{theme === "dark" ? "Dark" : "Light"} mode</span>
             </button>
-            <SecondaryButton href="/login" className="justify-center">{t.nav.login}</SecondaryButton>
-            <PrimaryButton href="/signup" className="justify-center">
-              {t.nav.signup}
-            </PrimaryButton>
+            {!token && (
+              <>
+                <SecondaryButton href="/login" className="justify-center">
+                  {t.nav.login}
+                </SecondaryButton>
+                <PrimaryButton href="/signup" className="justify-center">
+                  {t.nav.signup}
+                </PrimaryButton>
+              </>
+            )}
+            {token && (
+              <>
+                <SecondaryButton href="/dashboard" className="justify-center">
+                  Dashboard
+                </SecondaryButton>
+                <PrimaryButton onClick={logout} className="justify-center">
+                  Logout
+                </PrimaryButton>
+              </>
+            )}
           </div>
         </div>
       )}

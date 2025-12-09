@@ -2,24 +2,29 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../components/providers/AuthProvider";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setAuth } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [configError, setConfigError] = useState<string | null>(
     API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
   );
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSubmitting(true);
     const base = API_BASE;
     if (!base) {
       console.error("NEXT_PUBLIC_API_BASE_URL is not set. Cannot log in.");
       setConfigError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      setSubmitting(false);
       return;
     }
     try {
@@ -28,12 +33,14 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error("Login failed");
       const data = await res.json();
-      localStorage.setItem("on_duty_token", data.access_token);
+      if (!res.ok) throw new Error(data?.detail || "Login failed");
+      setAuth(data);
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -75,10 +82,10 @@ export default function LoginPage() {
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
-          disabled={!!configError}
+          disabled={!!configError || submitting}
           className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-50"
         >
-          Log in
+          {submitting ? "Logging in…" : "Log in"}
         </button>
       </form>
     </div>

@@ -1,6 +1,7 @@
 import secrets
 from datetime import datetime, timedelta
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.token import EmailVerificationToken, PasswordResetToken
@@ -26,6 +27,11 @@ def _create_email_verification_token(db: Session, user: User) -> EmailVerificati
 
 
 def signup(db: Session, payload: SignupRequest):
+    normalized_email = payload.email.strip().lower()
+    existing = db.query(User).filter(User.email == normalized_email).first()
+    if existing:
+        raise ValueError("A user with this email already exists.")
+
     trial_mode = payload.trial_mode or "with_card"
     trial_days = 15 if trial_mode == "with_card" else 3
     trial_ends_at = datetime.utcnow() + timedelta(days=trial_days)
@@ -40,12 +46,20 @@ def signup(db: Session, payload: SignupRequest):
     )
     user = User(
         tenant_id=tenant.id,
-        email=payload.email,
+        email=normalized_email,
         hashed_password=hash_password(payload.password),
         role="admin",
     )
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        # Clean up the tenant if user creation failed to avoid orphan tenants.
+        db.delete(tenant)
+        db.commit()
+        raise ValueError("A user with this email already exists.") from exc
+
     db.refresh(user)
     verification_token = _create_email_verification_token(db, user)
     access_token = create_access_token({"sub": str(user.id), "tenant_id": str(tenant.id)})
@@ -53,7 +67,8 @@ def signup(db: Session, payload: SignupRequest):
 
 
 def login(db: Session, payload: LoginRequest):
-    user = db.query(User).filter(User.email == payload.email).first()
+    normalized_email = payload.email.strip().lower()
+    user = db.query(User).filter(User.email == normalized_email).first()
     if not user or not verify_password(payload.password, user.hashed_password):
         return None, None, None
 
