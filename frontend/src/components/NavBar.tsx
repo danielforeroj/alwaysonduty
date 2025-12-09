@@ -92,6 +92,7 @@ export default function NavBar() {
           {token && (
             <>
               <SecondaryButton href="/dashboard">Dashboard</SecondaryButton>
+              <SecondaryButton href="/agents">AI Agents</SecondaryButton>
               <PrimaryButton onClick={logout} className="hidden lg:inline-flex">
                 Logout
               </PrimaryButton>
@@ -166,6 +167,9 @@ export default function NavBar() {
               <>
                 <SecondaryButton href="/dashboard" className="justify-center">
                   Dashboard
+                </SecondaryButton>
+                <SecondaryButton href="/agents" className="justify-center">
+                  AI Agents
                 </SecondaryButton>
                 <PrimaryButton onClick={logout} className="justify-center">
                   Logout
