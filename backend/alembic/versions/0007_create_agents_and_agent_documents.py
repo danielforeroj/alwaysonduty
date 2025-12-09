@@ -3,7 +3,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "0007_create_agents_and_agent_documents"
+revision = "0007_agents_and_agent_documents"
 down_revision = "0006_fix_user_email_uniqueness"
 branch_labels = None
 depends_on = None
