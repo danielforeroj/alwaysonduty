@@ -5,6 +5,7 @@ import resend
 from fastapi import BackgroundTasks
 
 from app.config import get_settings
+from app.models.agent import Agent
 from app.models.tenant import Tenant
 from app.models.user import User
 
@@ -150,3 +151,24 @@ def send_suspicious_activity_email(user: User, tenant: Tenant, details: str) -> 
     <p>— The OnDuty Team</p>
     """
     _send_email(user.email, subject, html, tags={"category": "suspicious_activity"})
+
+
+def send_agent_configuration_email(user: User, tenant: Tenant, agent: Agent) -> None:
+    subject = f"Your OnDuty agent \"{agent.name}\" is configured"
+    frontend_url = settings.frontend_base_url.rstrip("/")
+    agent_url = f"{frontend_url}/agents/{agent.id}"
+
+    html = f"""
+    <p>Hi {user.email},</p>
+    <p>Your new OnDuty agent for <strong>{tenant.name}</strong> has been created.</p>
+    <p>Here’s a quick summary:</p>
+    <ul>
+      <li><strong>Agent name:</strong> {agent.name}</li>
+      <li><strong>Status:</strong> {agent.status}</li>
+      <li><strong>Primary goal:</strong> {agent.job_and_company_profile.get("primary_goal", "")}</li>
+    </ul>
+    <p>You can review or update its configuration here:</p>
+    <p><a href="{agent_url}">{agent_url}</a></p>
+    <p>— The OnDuty Team</p>
+    """
+    _send_email(user.email, subject, html, tags={"category": "agent_configuration"})
