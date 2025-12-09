@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -18,6 +20,8 @@ from app.utils.security import create_access_token
 
 router = APIRouter()
 
+logger = logging.getLogger(__name__)
+
 
 settings = get_settings()
 
@@ -30,8 +34,12 @@ def signup(
 ):
     try:
         token, tenant, user, verification_token = auth_service.signup(db, payload)
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not create tenant")
+    except Exception as exc:
+        logger.exception("Signup failed while creating tenant")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Could not create tenant: {exc}",
+        )
     background_tasks.add_task(email_service.send_account_creation_email, user, tenant)
     background_tasks.add_task(
         email_service.send_email_verification_email,
