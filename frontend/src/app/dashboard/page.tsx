@@ -5,48 +5,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../components/providers/AuthProvider";
+import {
+  DashboardMetrics,
+  EMPTY_METRICS,
+} from "../../types/dashboard";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-interface PlanDetails {
-  name: string;
-  billing_status?: string | null;
-  trial_ends_at?: string | null;
-  monthly_conversations_limit: number;
-  brands_limit: number;
-  seats_included: number;
-  channels_included: number;
-}
-
-interface UsageMetrics {
-  current_month_conversations: number;
-  current_month_messages: number;
-  customers_count: number;
-  connected_channels_count: number;
-  seats_used: number;
-}
-
-interface DailyConversationCount {
-  date: string;
-  count: number;
-}
-
-interface ChannelBreakdown {
-  channel: string;
-  count: number;
-}
-
-interface DashboardResponse {
-  plan: PlanDetails;
-  usage: UsageMetrics;
-  timeseries: { daily_conversations_last_30_days: DailyConversationCount[] };
-  breakdown: { conversations_by_channel: ChannelBreakdown[] };
-}
 
 export default function DashboardPage() {
   const router = useRouter();
   const { token, user, tenant, loading: authLoading, logout } = useAuth();
-  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
+  const [dashboard, setDashboard] = useState<DashboardMetrics>(EMPTY_METRICS);
   const [configError, setConfigError] = useState<string | null>(
     API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
   );
@@ -77,10 +46,12 @@ export default function DashboardPage() {
           return;
         }
         if (!res.ok) throw new Error("Failed to load dashboard");
-        const data = await res.json();
+        const data: DashboardMetrics = await res.json();
         setDashboard(data);
+        setError(null);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load dashboard metrics", err);
+        setDashboard(EMPTY_METRICS);
         setError("We couldn’t load your dashboard metrics. Please try again.");
       } finally {
         setLoading(false);
@@ -104,13 +75,12 @@ export default function DashboardPage() {
     return <p className="text-red-600">{configError}</p>;
   }
 
-  const trialEnds = formatDate(dashboard?.plan.trial_ends_at || null);
+  const trialEnds = formatDate(dashboard.plan.trial_ends_at || null);
 
-  const planName = dashboard?.plan.name ? dashboard.plan.name : "starter";
-  const channelBreakdown = dashboard?.breakdown.conversations_by_channel || [];
+  const planName = dashboard.plan.name ? dashboard.plan.name : "starter";
+  const channelBreakdown = dashboard.breakdown.conversations_by_channel || [];
   const totalByChannel = channelBreakdown.reduce((acc, item) => acc + item.count, 0);
-  const usageSeries =
-    dashboard?.timeseries.daily_conversations_last_30_days.slice(-7) || [];
+  const usageSeries = dashboard.timeseries.daily_conversations_last_30_days.slice(-7) || [];
 
   const usageCards = (
     <div className="grid gap-4 md:grid-cols-2">
@@ -150,19 +120,19 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {loading && (
-        <div className="rounded-2xl bg-white p-6 text-slate-600 shadow-sm dark:bg-slate-900/70">
-          Loading dashboard...
-        </div>
-      )}
-
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-950">
           {error}
         </div>
       )}
 
-      {dashboard && (
+      {loading && (
+        <div className="rounded-2xl bg-white p-6 text-slate-600 shadow-sm dark:bg-slate-900/70">
+          Loading dashboard...
+        </div>
+      )}
+
+      {!loading && (
         <div className="space-y-6">
           <div className="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-900/70">
             <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">

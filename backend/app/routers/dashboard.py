@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from fastapi import APIRouter, Depends
+import logging
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -22,6 +23,7 @@ from app.services.plan_limits import get_plan_limits
 from app.utils.dependencies import get_current_user, get_db
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def _start_of_current_month() -> datetime:
@@ -34,6 +36,7 @@ def get_dashboard_metrics(
     db: Session = Depends(get_db), current_user=Depends(get_current_user)
 ):
     tenant = current_user.tenant
+    logger.info("Dashboard metrics requested for tenant %s", tenant.id)
     plan_type = (tenant.plan_type or "starter").lower()
     limits = get_plan_limits(plan_type)
 
@@ -99,7 +102,8 @@ def get_dashboard_metrics(
         .all()
     )
     conversations_by_channel = [
-        ChannelBreakdown(channel=row[0], count=row[1]) for row in channel_rows
+        ChannelBreakdown(channel=(row[0] or "unknown"), count=row[1])
+        for row in channel_rows
     ]
 
     plan = PlanDetails(
