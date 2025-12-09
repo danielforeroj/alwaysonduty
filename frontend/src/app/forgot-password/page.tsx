@@ -39,17 +39,20 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="mx-auto max-w-md space-y-6">
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Reset your password</h1>
-        <p className="text-slate-600">Enter your email to receive a reset link.</p>
+      <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Reset your password</h1>
+        <p className="text-slate-600 dark:text-slate-300">Enter your email to receive a reset link.</p>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl bg-white p-6 shadow-sm">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
+      >
         <div>
-          <label className="text-sm text-slate-600">Email</label>
+          <label className="text-sm text-slate-600 dark:text-slate-300">Email</label>
           <input
             required
             type="email"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -60,7 +63,7 @@ export default function ForgotPasswordPage() {
         <button
           type="submit"
           disabled={!!configError}
-          className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white shadow hover:bg-slate-800 disabled:opacity-50"
+          className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white shadow hover:bg-slate-800 disabled:opacity-50 dark:hover:bg-slate-700"
         >
           Send reset link
         </button>

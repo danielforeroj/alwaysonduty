@@ -49,29 +49,32 @@ function ResetPasswordForm() {
 
   return (
     <div className="mx-auto max-w-md space-y-6">
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Set a new password</h1>
-        <p className="text-slate-600">Enter and confirm your new password.</p>
+      <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Set a new password</h1>
+        <p className="text-slate-600 dark:text-slate-300">Enter and confirm your new password.</p>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl bg-white p-6 shadow-sm">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
+      >
         <div>
-          <label className="text-sm text-slate-600">New password</label>
+          <label className="text-sm text-slate-600 dark:text-slate-300">New password</label>
           <input
             required
             type="password"
             autoComplete="new-password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
         </div>
         <div>
-          <label className="text-sm text-slate-600">Confirm new password</label>
+          <label className="text-sm text-slate-600 dark:text-slate-300">Confirm new password</label>
           <input
             required
             type="password"
             autoComplete="new-password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
@@ -82,7 +85,7 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={!!configError}
-          className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white shadow hover:bg-slate-800 disabled:opacity-50"
+          className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white shadow hover:bg-slate-800 disabled:opacity-50 dark:hover:bg-slate-700"
         >
           Update password
         </button>

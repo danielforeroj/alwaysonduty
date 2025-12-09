@@ -46,35 +46,38 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-md space-y-6">
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Welcome back</h1>
-        <p className="text-slate-600">Log in to manage your tenant.</p>
+      <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Welcome back</h1>
+        <p className="text-slate-600 dark:text-slate-300">Log in to manage your tenant.</p>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl bg-white p-6 shadow-sm">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
+      >
         <div>
-          <label className="text-sm text-slate-600">Email</label>
+          <label className="text-sm text-slate-600 dark:text-slate-300">Email</label>
           <input
             required
             type="email"
             autoComplete="username"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
         </div>
         <div>
-          <label className="text-sm text-slate-600">Password</label>
+          <label className="text-sm text-slate-600 dark:text-slate-300">Password</label>
           <input
             required
             type="password"
             autoComplete="current-password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
         </div>
         <div className="text-right text-sm">
-          <a href="/forgot-password" className="text-slate-700 underline">
+          <a href="/forgot-password" className="text-slate-700 underline dark:text-slate-200">
             Forgot password?
           </a>
         </div>
@@ -83,7 +86,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={!!configError || submitting}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-50 dark:hover:bg-blue-500"
         >
           {submitting ? "Logging in…" : "Log in"}
         </button>

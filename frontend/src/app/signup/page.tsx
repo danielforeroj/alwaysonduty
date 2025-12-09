@@ -78,57 +78,60 @@ function SignupForm() {
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Create your account</h1>
-        <p className="text-slate-600">Spin up your tenant and invite your team later.</p>
+      <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">Create your account</h1>
+        <p className="text-slate-600 dark:text-slate-300">Spin up your tenant and invite your team later.</p>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl bg-white p-6 shadow-sm">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
+      >
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="text-sm text-slate-600">Name</label>
+            <label className="text-sm text-slate-600 dark:text-slate-300">Name</label>
             <input
               required
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
           </div>
           <div>
-            <label className="text-sm text-slate-600">Business name</label>
+            <label className="text-sm text-slate-600 dark:text-slate-300">Business name</label>
             <input
               required
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
               value={form.business_name}
               onChange={(e) => setForm({ ...form, business_name: e.target.value })}
             />
           </div>
         </div>
         <div>
-          <label className="text-sm text-slate-600">Email</label>
+          <label className="text-sm text-slate-600 dark:text-slate-300">Email</label>
           <input
             required
             type="email"
             autoComplete="username"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
         </div>
         <div>
-          <label className="text-sm text-slate-600">Password</label>
+          <label className="text-sm text-slate-600 dark:text-slate-300">Password</label>
           <input
             required
             type="password"
             autoComplete="new-password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
         </div>
         <div>
-          <label className="text-sm text-slate-600">Plan</label>
+          <label className="text-sm text-slate-600 dark:text-slate-300">Plan</label>
           <select
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
             value={form.plan_type}
             onChange={(e) => setForm({ ...form, plan_type: e.target.value as PlanType })}
           >
@@ -137,9 +140,9 @@ function SignupForm() {
             <option value="premium">Premium</option>
           </select>
         </div>
-        <div className="space-y-2 rounded-lg border border-dashed border-slate-300 p-3 text-sm">
-          <p className="font-semibold text-slate-700">Trial options</p>
-          <label className="flex items-center gap-2 text-slate-700">
+        <div className="space-y-2 rounded-lg border border-dashed border-slate-300 p-3 text-sm dark:border-slate-700">
+          <p className="font-semibold text-slate-700 dark:text-slate-200">Trial options</p>
+          <label className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
             <input
               type="radio"
               name="trial"
@@ -149,7 +152,7 @@ function SignupForm() {
             />
             <span>15-day free trial (card required)</span>
           </label>
-          <label className="flex items-center gap-2 text-slate-700">
+          <label className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
             <input
               type="radio"
               name="trial"
@@ -165,7 +168,7 @@ function SignupForm() {
         <button
           type="submit"
           disabled={!!configError || submitting}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-50 dark:hover:bg-blue-500"
         >
           {submitting ? "Creating..." : "Create account"}
         </button>
