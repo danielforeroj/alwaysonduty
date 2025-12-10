@@ -13,6 +13,7 @@ export default function AgentsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiedAgentId, setCopiedAgentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -40,6 +41,21 @@ export default function AgentsPage() {
 
     load();
   }, [authLoading, token, router, logout]);
+
+  const publicBaseUrl =
+    (process.env.NEXT_PUBLIC_APP_BASE_URL?.replace(/\/$/, "") as string | undefined) ||
+    "https://alwaysonduty.io";
+
+  const handleCopy = async (agentId: string, slug: string) => {
+    const url = `${publicBaseUrl}/live/${slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedAgentId(agentId);
+      setTimeout(() => setCopiedAgentId(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy link", err);
+    }
+  };
 
   if (loading) {
     return <div className="p-6">Loading agents...</div>;
@@ -81,10 +97,23 @@ export default function AgentsPage() {
               <div className="mt-3 text-xs text-gray-500">
                 Goal: {agent.job_and_company_profile?.primary_goal ?? "—"}
               </div>
-              <div className="mt-4 flex justify-end">
-                <SecondaryButton onClick={() => router.push(`/agents/${agent.id}`)}>
-                  Edit
-                </SecondaryButton>
+              <div className="mt-4 space-y-2 text-xs text-gray-600">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-[11px] text-gray-500">
+                    {publicBaseUrl}/live/{agent.slug}
+                  </span>
+                  <SecondaryButton
+                    onClick={() => handleCopy(agent.id, agent.slug)}
+                    className="px-3 py-1 text-xs"
+                  >
+                    {copiedAgentId === agent.id ? "Copied" : "Copy link"}
+                  </SecondaryButton>
+                </div>
+                <div className="flex justify-end">
+                  <SecondaryButton onClick={() => router.push(`/agents/${agent.id}`)}>
+                    Edit
+                  </SecondaryButton>
+                </div>
               </div>
             </div>
           ))}
