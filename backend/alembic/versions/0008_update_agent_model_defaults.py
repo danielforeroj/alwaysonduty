@@ -3,7 +3,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "0008_update_agent_model_defaults"
-down_revision = "0007_agents_and_agent_documents"
+down_revision = "0008_add_agent_type_to_agents"
 branch_labels = None
 depends_on = None
 
