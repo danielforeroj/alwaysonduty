@@ -2,8 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 
-import { PrimaryButton } from "@/components/common/Buttons";
-import { SectionHeading } from "@/components/common/SectionHeading";
+import { PrimaryButton } from "@/components/Buttons";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -70,7 +69,8 @@ export default function TryPage() {
   return (
     <div className="space-y-8">
       <div className="rounded-3xl bg-white/90 p-8 shadow-sm ring-1 ring-slate-200">
-        <SectionHeading eyebrow="Try OnDuty" title="Talk with our demo agent" />
+        <p className="text-xs font-semibold uppercase tracking-wide text-onDutyGold">Try OnDuty</p>
+        <h2 className="mt-2 text-2xl font-semibold text-slate-900">Talk with our demo agent</h2>
         <p className="mt-2 text-base text-slate-600">
           Ask anything about OnDuty’s platform, use cases, roadmap, or how we onboard new businesses.
         </p>
