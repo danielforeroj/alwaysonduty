@@ -80,8 +80,8 @@ export const copy = {
         "Chat with this workspace's OnDuty AI. Messages are answered instantly based on the company's playbook.",
       aboutHeading: "About this agent",
       about: {
-        type: "Agent type",
-        goal: "Primary goal",
+        agentName: "Agent name",
+        summary: "Company summary",
         company: "Company",
         website: "Website",
       },
@@ -179,8 +179,8 @@ export const copy = {
         "Chatea con el agente OnDuty de este workspace. Las respuestas siguen las instrucciones de la empresa al instante.",
       aboutHeading: "Sobre este agente",
       about: {
-        type: "Tipo de agente",
-        goal: "Objetivo principal",
+        agentName: "Nombre del agente",
+        summary: "Resumen de la empresa",
         company: "Empresa",
         website: "Sitio web",
       },

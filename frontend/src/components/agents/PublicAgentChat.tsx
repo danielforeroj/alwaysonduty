@@ -49,7 +49,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
   useEffect(() => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages]);
+  }, [messages, loading]);
 
   const sendMessage = async () => {
     if (!input.trim() || loading || !sessionId || !API_BASE) return;
@@ -61,6 +61,9 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
     setLoading(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+
       const res = await fetch(`${API_BASE}/api/webchat/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,6 +73,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
           session_id: sessionId,
           text,
         }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -83,9 +87,14 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
         text: data.reply || t.starterBody,
       };
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (err) {
-      setError(t.error);
+    } catch (err: any) {
+      if (err?.name === "AbortError") {
+        setError(t.timeout || t.error);
+      } else {
+        setError(t.error);
+      }
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -112,37 +121,39 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
 
       <div
         ref={scrollRef}
-        className="flex-1 space-y-3 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+        className="max-h-[65vh] min-h-[18rem] h-[50vh] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
       >
-        {messages.length === 0 && (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white/80 p-4 text-sm text-slate-600">
-            <p className="font-medium text-slate-800">{t.starterTitle}</p>
-            <p className="mt-1 text-slate-600">{t.starterBody}</p>
-          </div>
-        )}
-
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
-                msg.role === "user"
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-900 ring-1 ring-slate-200"
-              }`}
-            >
-              {msg.text}
+        <div className="flex min-h-full flex-col justify-end gap-3">
+          {messages.length === 0 && (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white/80 p-4 text-sm text-slate-600">
+              <p className="font-medium text-slate-800">{t.starterTitle}</p>
+              <p className="mt-1 text-slate-600">{t.starterBody}</p>
             </div>
-          </div>
-        ))}
+          )}
 
-        {loading && (
-          <div className="flex justify-start">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
-              {t.thinking}
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                  msg.role === "user"
+                    ? "bg-slate-900 text-white"
+                    : "bg-white text-slate-900 ring-1 ring-slate-200"
+                }`}
+              >
+                {msg.text}
+              </div>
             </div>
-          </div>
-        )}
+          ))}
+
+          {loading && (
+            <div className="flex justify-start">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+                {t.thinking}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {error && <p className="text-sm text-red-600">{t.error}</p>}
