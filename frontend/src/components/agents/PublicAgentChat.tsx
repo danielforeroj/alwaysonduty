@@ -112,7 +112,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
 
       <div
         ref={scrollRef}
-        className="h-[22.5rem] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+        className="max-h-[65vh] min-h-[18rem] h-[50vh] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
       >
         <div className="flex min-h-full flex-col justify-end gap-3">
           {messages.length === 0 && (
