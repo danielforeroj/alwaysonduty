@@ -92,5 +92,3 @@ export const COUNTRY_OPTIONS: CountryOption[] = [
   { code: "GB", name: "United Kingdom", region: "Europe" },
   { code: "VA", name: "Vatican City", region: "Europe" },
 ];
-
-This file centralizes region and country options.
