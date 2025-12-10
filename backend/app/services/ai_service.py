@@ -110,6 +110,11 @@ def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
         )
         model_name = settings.groq_default_model
 
+    # Prefer a known-good fallback model if configuration provides an invalid one.
+    fallback_model = "llama3-70b-8192"
+    if not model_name:
+        model_name = fallback_model
+
     # Build Groq messages: one system message + one user message per input string.
     groq_messages = [{"role": "system", "content": system_prompt}]
     for text in messages:
@@ -129,4 +134,15 @@ def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
         return completion.choices[0].message.content
     except Exception as exc:
         logger.exception("Groq chat.completions.create failed: %s", exc)
+
+        if model_name != fallback_model:
+            try:
+                completion = client.chat.completions.create(
+                    model=fallback_model,
+                    messages=groq_messages,
+                )
+                return completion.choices[0].message.content
+            except Exception as fallback_exc:
+                logger.exception("Groq fallback model failed: %s", fallback_exc)
+
         return _fallback_reply(agent, tenant, messages)
