@@ -334,7 +334,8 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       if (mode === "create") {
         const created = await createAgent(token, payload);
         setSaveMessage("Agent created! Redirecting...");
-        router.push(`/agents/${created.id}/launch`);
+        // Redirect to the existing edit wizard for this agent
+        router.push(`/agents/${created.id}`);
       } else if (mode === "edit" && initialAgent) {
         await updateAgent(token, initialAgent.id, payload);
         setSaveMessage("Changes saved!");
@@ -463,6 +464,22 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
           }}
           className="mt-1 w-full rounded-md border px-3 py-2"
         />
+      </div>
+
+      <div className="mt-3 text-xs text-gray-500">
+        <div className="font-medium text-gray-700">Public page (coming soon)</div>
+        <div className="mt-1 rounded-md bg-gray-50 px-3 py-2 font-mono text-[11px] text-gray-600">
+          {process.env.NEXT_PUBLIC_APP_BASE_URL
+            ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/live/${tenant?.slug ?? "your-workspace"}/${
+                slug || "(auto-from-name)"
+              }`
+            : `https://alwaysonduty.com/live/${tenant?.slug ?? "your-workspace"}/${
+                slug || "(auto-from-name)"
+              }`}
+        </div>
+        <p className="mt-1">
+          We’ll use your workspace and agent slug to host a simple page where visitors can chat with this agent.
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
