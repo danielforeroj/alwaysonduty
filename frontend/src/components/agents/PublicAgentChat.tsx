@@ -2,6 +2,8 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
+import { useCopy } from "@/lib/copy";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type ChatMessage = {
@@ -25,12 +27,13 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const t = useCopy().publicAgent.chat;
 
   const storageKey = useMemo(() => `on_duty_session_id:${agentSlug}`, [agentSlug]);
 
   useEffect(() => {
     if (!API_BASE) {
-      setError("API base URL is not configured.");
+      setError(t.error);
       return;
     }
     const existing = localStorage.getItem(storageKey);
@@ -41,7 +44,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
       localStorage.setItem(storageKey, id);
       setSessionId(id);
     }
-  }, [storageKey]);
+  }, [storageKey, t.error]);
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -77,11 +80,11 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
       const aiMsg: ChatMessage = {
         id: generateId(),
         role: "ai",
-        text: data.reply || "I had trouble responding just now.",
+        text: data.reply || t.starterBody,
       };
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
-      setError("We couldn’t send your message. Please try again.");
+      setError(t.error);
     } finally {
       setLoading(false);
     }
@@ -98,12 +101,12 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
     <div className="flex h-full flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">Chat live</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500">{t.heading}</p>
           <h2 className="text-lg font-semibold text-slate-900">{agentName}</h2>
           <p className="text-sm text-slate-600">{companyName || "OnDuty agent"}</p>
         </div>
         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
-          Online
+          {t.badge}
         </span>
       </div>
 
@@ -113,11 +116,8 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
       >
         {messages.length === 0 && (
           <div className="rounded-xl border border-dashed border-slate-300 bg-white/80 p-4 text-sm text-slate-600">
-            <p className="font-medium text-slate-800">Start a conversation</p>
-            <p className="mt-1 text-slate-600">
-              Ask about products, policies, or anything else. Responses are powered by Groq and tailored by the
-              workspace.
-            </p>
+            <p className="font-medium text-slate-800">{t.starterTitle}</p>
+            <p className="mt-1 text-slate-600">{t.starterBody}</p>
           </div>
         )}
 
@@ -139,13 +139,13 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
           <div className="flex justify-start">
             <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
-              Thinking...
+              {t.thinking}
             </div>
           </div>
         )}
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600">{t.error}</p>}
 
       <div className="flex gap-2 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm">
         <input
@@ -153,7 +153,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Message the agent"
+          placeholder={t.placeholder}
           className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
           disabled={loading || (!!error && !API_BASE)}
         />
@@ -162,7 +162,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
           disabled={loading || !input.trim() || !sessionId || !API_BASE}
           className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "Sending" : "Send"}
+          {loading ? t.sending : t.send}
         </button>
       </div>
     </div>
