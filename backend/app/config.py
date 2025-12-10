@@ -17,7 +17,11 @@ class Settings(BaseSettings):
     resend_api_key: Optional[str] = Field(None, env="RESEND_API_KEY")
     resend_from_email: Optional[str] = Field(None, env="RESEND_FROM_EMAIL")
     groq_api_key: Optional[str] = Field(None, env="GROQ_API_KEY")
-    groq_default_model: str = Field("llama-3.1-70b", env="GROQ_DEFAULT_MODEL")
+    # Main source of truth is the env var; the string literal is only a dev fallback
+    groq_default_model: str = Field(
+        "llama-3.3-70b-versatile",
+        env="GROQ_DEFAULT_MODEL",
+    )
 
     class Config:
         env_file = ".env"
