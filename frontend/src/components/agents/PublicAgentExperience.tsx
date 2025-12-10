@@ -10,7 +10,7 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
   const t = useCopy().publicAgent;
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-6">
+    <main className="mx-auto max-w-5xl -mt-8 px-6 pb-6 pt-2">
       <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 p-4 text-white shadow-lg">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
