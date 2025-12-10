@@ -27,6 +27,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const t = useCopy().publicAgent.chat;
 
   const storageKey = useMemo(() => `on_duty_session_id:${agentSlug}`, [agentSlug]);
@@ -49,7 +50,15 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
   useEffect(() => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages]);
+  }, [messages, loading]);
+
+  useEffect(() => {
+    if (!inputRef.current) return;
+    const el = inputRef.current;
+    el.style.height = "auto";
+    const maxHeight = 4 * 24; // 4 lines * 24px line-height
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+  }, [input]);
 
   const sendMessage = async () => {
     if (!input.trim() || loading || !sessionId || !API_BASE) return;
@@ -60,7 +69,12 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
     setInput("");
     setLoading(true);
 
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     try {
+      timeoutId = setTimeout(() => controller.abort(), 20000);
+
       const res = await fetch(`${API_BASE}/api/webchat/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,6 +84,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
           session_id: sessionId,
           text,
         }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -83,14 +98,21 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
         text: data.reply || t.starterBody,
       };
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (err) {
-      setError(t.error);
+    } catch (err: any) {
+      if (err?.name === "AbortError") {
+        setError(t.timeout || t.error);
+      } else {
+        setError(t.error);
+      }
     } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       setLoading(false);
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       sendMessage();
@@ -98,7 +120,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
   };
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex h-full min-h-[60vh] flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-500">{t.heading}</p>
@@ -112,49 +134,52 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
 
       <div
         ref={scrollRef}
-        className="flex-1 space-y-3 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+        className="flex-1 min-h-[18rem] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
       >
-        {messages.length === 0 && (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white/80 p-4 text-sm text-slate-600">
-            <p className="font-medium text-slate-800">{t.starterTitle}</p>
-            <p className="mt-1 text-slate-600">{t.starterBody}</p>
-          </div>
-        )}
-
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
-                msg.role === "user"
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-900 ring-1 ring-slate-200"
-              }`}
-            >
-              {msg.text}
+        <div className="flex min-h-full flex-col justify-end gap-3">
+          {messages.length === 0 && (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white/80 p-4 text-sm text-slate-600">
+              <p className="font-medium text-slate-800">{t.starterTitle}</p>
+              <p className="mt-1 text-slate-600">{t.starterBody}</p>
             </div>
-          </div>
-        ))}
+          )}
 
-        {loading && (
-          <div className="flex justify-start">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
-              {t.thinking}
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                  msg.role === "user"
+                    ? "bg-slate-900 text-white"
+                    : "bg-white text-slate-900 ring-1 ring-slate-200"
+                }`}
+              >
+                {msg.text}
+              </div>
             </div>
-          </div>
-        )}
+          ))}
+
+          {loading && (
+            <div className="flex justify-start">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+                {t.thinking}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{t.error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex gap-2 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm">
-        <input
-          type="text"
+        <textarea
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={t.placeholder}
-          className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+          rows={1}
+          className="min-h-[2.75rem] max-h-24 flex-1 resize-none overflow-y-auto rounded-xl border border-slate-200 px-3 py-2 text-sm leading-6 focus:border-slate-400 focus:outline-none"
           disabled={loading || (!!error && !API_BASE)}
         />
         <button

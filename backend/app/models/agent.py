@@ -26,7 +26,8 @@ class Agent(Base):
 
     # For later: which provider/model this agent uses
     model_provider = Column(String(50), nullable=False, default="groq")
-    model_name = Column(String(100), nullable=False, default="llama-3.1-70b")
+    # Optional per-agent override. If null, we fall back to the configured default model.
+    model_name = Column(String(100), nullable=True)
 
     # How this agent is trained; we start with prompt-only
     training_mode = Column(
