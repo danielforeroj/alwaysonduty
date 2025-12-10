@@ -15,6 +15,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 export interface TenantInfo {
   id?: string;
   name: string;
+  slug?: string;
   plan_type: string;
   billing_status?: string | null;
   trial_ends_at?: string | null;

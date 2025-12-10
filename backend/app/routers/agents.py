@@ -1,8 +1,12 @@
-from typing import List
+import logging
+import re
+import uuid
+from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
 from app.models.agent import Agent
 from app.models.agent_document import AgentDocument
@@ -10,27 +14,44 @@ from app.schemas.agent import AgentCreate, AgentUpdate, AgentResponse, Knowledge
 from app.services import email_service
 from app.utils.dependencies import get_current_user, get_db
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 
-def _slugify(name: str) -> str:
-    base = name.strip().lower()
-    base = "-".join(part for part in base.split() if part)
-    return base or "agent"
+def _slugify(value: str) -> str:
+    value = value.strip().lower()
+    value = re.sub(r"[^a-z0-9]+", "-", value)
+    return value.strip("-") or "agent"
 
 
-def _ensure_unique_slug(db: Session, tenant_id, base_slug: str) -> str:
+def _ensure_unique_slug(
+    db: Session,
+    tenant_id,
+    base_slug: str,
+    exclude_agent_id: Optional[uuid.UUID] = None,
+) -> str:
+    """
+    Ensure the slug is unique for this tenant.
+    If exclude_agent_id is provided, ignore that agent when checking for conflicts.
+    """
     slug = base_slug
     counter = 2
-    while (
-        db.query(Agent)
-        .filter(Agent.slug == slug, Agent.tenant_id == tenant_id)
-        .first()
-        is not None
-    ):
+
+    while True:
+        query = db.query(Agent).filter(
+            Agent.tenant_id == tenant_id,
+            Agent.slug == slug,
+        )
+        if exclude_agent_id is not None:
+            query = query.filter(Agent.id != exclude_agent_id)
+
+        existing = query.first()
+        if existing is None:
+            return slug
+
         slug = f"{base_slug}-{counter}"
         counter += 1
-    return slug
 
 
 @router.get("", response_model=List[AgentResponse])
@@ -59,19 +80,29 @@ def create_agent(
     base_slug = payload.slug or _slugify(payload.name)
     slug = _ensure_unique_slug(db, tenant_id=tenant_id, base_slug=base_slug)
 
+    agent_type = payload.agent_type or "customer_service"
+
     agent = Agent(
         tenant_id=tenant_id,
         name=payload.name,
         slug=slug,
         status=payload.status,
-        agent_type=payload.agent_type,
+        agent_type=agent_type,
         job_and_company_profile=payload.job_and_company_profile.dict(),
         customer_profile=payload.customer_profile.dict(),
         data_profile=payload.data_profile.dict() if payload.data_profile else None,
         allowed_websites=[w.dict() for w in (payload.allowed_websites or [])],
     )
-    db.add(agent)
-    db.commit()
+    try:
+        db.add(agent)
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        logger.exception("Failed to create agent: %s", exc)
+        raise HTTPException(
+            status_code=500,
+            detail="Could not create agent. Please try again or contact support.",
+        )
     db.refresh(agent)
 
     # Notify tenant user via email (Resend)
@@ -118,6 +149,15 @@ def update_agent(
 
     if payload.name is not None:
         agent.name = payload.name
+    if payload.slug is not None:
+        desired_slug = _slugify(payload.slug)
+        if desired_slug != agent.slug:
+            agent.slug = _ensure_unique_slug(
+                db,
+                tenant_id=current_user.tenant.id,
+                base_slug=desired_slug,
+                exclude_agent_id=agent.id,
+            )
     if payload.status is not None:
         agent.status = payload.status
     if payload.agent_type is not None:
