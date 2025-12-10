@@ -39,9 +39,9 @@ export async function fetchAgent(token: string, id: string): Promise<Agent> {
 
 type AgentPayload = {
   name: string;
-  slug: string;
+  slug?: string | null;
   status: "draft" | "active" | "disabled";
-  agent_type: AgentType;
+  agent_type?: AgentType;
   job_and_company_profile: Agent["job_and_company_profile"];
   customer_profile: Agent["customer_profile"];
   data_profile?: Agent["data_profile"] | null;
