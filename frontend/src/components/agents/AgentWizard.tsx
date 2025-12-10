@@ -32,6 +32,18 @@ export interface AgentWizardProps {
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
+const normalizeWebsite = (value: string | null | undefined): string | undefined => {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
+};
+
 const defaultJobAndCompany = (): JobAndCompanyProfile => ({
   agent_name: "OnDuty Assistant",
   primary_goal: "reduce_support_load",
@@ -273,6 +285,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
 
     const jobProfileForPayload: JobAndCompanyProfile = {
       ...jobProfile,
+      company_website: normalizeWebsite(jobProfile.company_website || undefined),
       environment_primary: "web_widget",
       environment_future: [],
     };
@@ -282,6 +295,20 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       regions,
       countries,
     };
+
+    const cleanedAllowedWebsites =
+      allowedWebsites && allowedWebsites.length > 0
+        ? allowedWebsites
+            .map((w) => {
+              const normalizedUrl = normalizeWebsite(w.url);
+              return {
+                ...w,
+                url: normalizedUrl ?? "",
+                label: (w.label && w.label.trim()) || undefined,
+              };
+            })
+            .filter((w) => !!w.url)
+        : null;
 
     const payload = {
       name,
@@ -297,7 +324,10 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
         dataProfile.out_of_date_notes === ""
           ? null
           : dataProfile,
-      allowed_websites: allowedWebsites && allowedWebsites.length > 0 ? allowedWebsites : null,
+      allowed_websites:
+        cleanedAllowedWebsites && cleanedAllowedWebsites.length > 0
+          ? cleanedAllowedWebsites
+          : null,
     };
 
     try {
