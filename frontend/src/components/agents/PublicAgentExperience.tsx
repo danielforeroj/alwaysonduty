@@ -10,14 +10,13 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
   const t = useCopy().publicAgent;
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-6">
-      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 p-4 text-white shadow-lg">
+    <main className="mx-auto -mt-6 flex min-h-screen max-w-5xl flex-col px-6 pb-8 pt-2">
+      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 px-3 py-2 text-white shadow-lg md:py-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-200">{t.heroTag}</p>
             <h1 className="mt-1 text-2xl font-semibold">{agent.name}</h1>
             <p className="mt-1 text-xs text-slate-200">{agent.job_and_company_profile.company_name}</p>
-            <p className="mt-3 max-w-2xl text-xs text-slate-200">{t.heroDescription}</p>
           </div>
           <Link
             href="/"
@@ -28,8 +27,8 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
         </div>
       </header>
 
-      <section className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2">
+      <section className="mt-4 grid flex-1 gap-4 lg:grid-cols-3">
+        <div className="flex min-h-[55vh] flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 lg:h-[calc(100vh-220px)]">
           <PublicAgentChat
             agentSlug={agent.slug}
             agentName={agent.name}
@@ -40,21 +39,13 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
           <h3 className="text-sm font-semibold text-slate-900">{t.aboutHeading}</h3>
           <dl className="mt-3 space-y-2 text-xs text-slate-700">
             <div>
-              <dt className="text-slate-500">{t.about.type}</dt>
-              <dd className="font-medium capitalize">{agent.agent_type.replace("_", " ")}</dd>
-            </div>
-            <div>
-              <dt className="text-slate-500">{t.about.goal}</dt>
-              <dd className="font-medium">{agent.job_and_company_profile.primary_goal.replace("_", " ")}</dd>
-            </div>
-            <div>
               <dt className="text-slate-500">{t.about.company}</dt>
-              <dd className="font-medium">{agent.job_and_company_profile.company_name}</dd>
+              <dd className="font-medium">{agent.job_and_company_profile.company_name || "—"}</dd>
             </div>
-            {agent.job_and_company_profile.company_website && (
-              <div>
-                <dt className="text-slate-500">{t.about.website}</dt>
-                <dd>
+            <div>
+              <dt className="text-slate-500">{t.about.website}</dt>
+              <dd>
+                {agent.job_and_company_profile.company_website ? (
                   <a
                     href={agent.job_and_company_profile.company_website}
                     className="font-medium text-blue-600 hover:text-blue-700"
@@ -63,9 +54,21 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
                   >
                     {agent.job_and_company_profile.company_website}
                   </a>
-                </dd>
-              </div>
-            )}
+                ) : (
+                  <span className="font-medium">—</span>
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">{t.about.agentName}</dt>
+              <dd className="font-medium">{agent.name}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">{t.about.summary}</dt>
+              <dd className="font-medium">
+                {agent.job_and_company_profile.short_description || "No summary provided."}
+              </dd>
+            </div>
           </dl>
         </aside>
       </section>
