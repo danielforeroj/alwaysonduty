@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { COUNTRY_OPTIONS, REGION_OPTIONS, type RegionId } from "@/constants/locations";
 import {
   Agent,
-  AgentType,
   AllowedWebsite,
   CustomerProfile,
   CustomerSegment,
@@ -31,6 +31,25 @@ export interface AgentWizardProps {
 }
 
 type Step = 1 | 2 | 3 | 4 | 5;
+
+const normalizeWebsite = (value: string | null | undefined): string | undefined => {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
+};
+
+const slugify = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "agent";
 
 const defaultJobAndCompany = (): JobAndCompanyProfile => ({
   agent_name: "OnDuty Assistant",
@@ -81,10 +100,11 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
   const { token, logout, tenant } = useAuth();
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [name, setName] = useState("OnDuty Assistant");
-  const [slug, setSlug] = useState("");
+  const [name, setName] = useState(initialAgent?.name ?? "OnDuty Assistant");
+  const [slug, setSlug] = useState(initialAgent?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState<boolean>(!!initialAgent?.slug);
   const [status, setStatus] = useState<Agent["status"]>("draft");
-  const [agentType, setAgentType] = useState<AgentType>("customer_service");
+  const agentType: Agent["agent_type"] = "customer_service";
 
   const [jobProfile, setJobProfile] = useState<JobAndCompanyProfile>(defaultJobAndCompany());
   const [customerProfile, setCustomerProfile] = useState<CustomerProfile>(defaultCustomerProfile());
@@ -121,7 +141,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       setName(initialAgent.name);
       setSlug(initialAgent.slug);
       setStatus(initialAgent.status);
-      setAgentType(initialAgent.agent_type ?? "customer_service");
+      setSlugTouched(true);
       setJobProfile({
         ...defaultJobAndCompany(),
         ...initialAgent.job_and_company_profile,
@@ -136,6 +156,12 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       setAllowedWebsites(initialAgent.allowed_websites ?? null);
     }
   }, [initialAgent]);
+
+  useEffect(() => {
+    if (!initialAgent && !slugTouched) {
+      setSlug(slugify(name));
+    }
+  }, [name, slugTouched, initialAgent]);
 
   useEffect(() => {
     const loadDocuments = async () => {
@@ -274,6 +300,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
 
     const jobProfileForPayload: JobAndCompanyProfile = {
       ...jobProfile,
+      company_website: normalizeWebsite(jobProfile.company_website || undefined),
       environment_primary: "web_widget",
       environment_future: [],
     };
@@ -284,21 +311,45 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       countries,
     };
 
+    const cleanedAllowedWebsites =
+      allowedWebsites && allowedWebsites.length > 0
+        ? allowedWebsites
+            .map((w) => {
+              const normalizedUrl = normalizeWebsite(w.url);
+              return {
+                ...w,
+                url: normalizedUrl ?? "",
+                label: (w.label && w.label.trim()) || undefined,
+              };
+            })
+            .filter((w) => !!w.url)
+        : null;
+
     const payload = {
       name,
-      slug,
+      slug: slug || undefined,
       status,
       agent_type: agentType,
       job_and_company_profile: jobProfileForPayload,
       customer_profile: customerProfileState,
-      data_profile: dataProfile && dataProfile.strategy_notes === "" && (dataProfile.authoritative_doc_ids?.length ?? 0) === 0 && dataProfile.out_of_date_notes === "" ? null : dataProfile,
-      allowed_websites: allowedWebsites && allowedWebsites.length > 0 ? allowedWebsites : null,
+      data_profile:
+        dataProfile &&
+        dataProfile.strategy_notes === "" &&
+        (dataProfile.authoritative_doc_ids?.length ?? 0) === 0 &&
+        dataProfile.out_of_date_notes === ""
+          ? null
+          : dataProfile,
+      allowed_websites:
+        cleanedAllowedWebsites && cleanedAllowedWebsites.length > 0
+          ? cleanedAllowedWebsites
+          : null,
     };
 
     try {
       if (mode === "create") {
         const created = await createAgent(token, payload);
         setSaveMessage("Agent created! Redirecting...");
+        // Redirect to the existing edit wizard for this agent
         router.push(`/agents/${created.id}`);
       } else if (mode === "edit" && initialAgent) {
         await updateAgent(token, initialAgent.id, payload);
@@ -392,53 +443,31 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       <div className="rounded-lg border bg-white p-4">
         <h4 className="text-sm font-medium text-gray-900">Agent type</h4>
         <p className="mt-1 text-xs text-gray-500">
-          Customer Service agents are available today. Sales agents are coming soon.
+          For now, OnDuty supports Customer Service agents. Sales agents are coming soon.
         </p>
-        <div className="mt-3 flex flex-col gap-2 md:flex-row">
-          <button
-            type="button"
-            onClick={() => setAgentType("customer_service")}
-            className={`flex-1 rounded-lg border p-3 text-left text-sm transition ${
-              agentType === "customer_service"
-                ? "border-black bg-black text-white"
-                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-            }`}
-          >
-            <div className="font-medium">Customer Service</div>
-            <div className="mt-1 text-xs text-gray-300 md:text-gray-200">
-              Handle FAQs, resolve issues, and keep CSAT high around the clock.
-            </div>
-          </button>
-          <button
-            type="button"
-            disabled
-            className="relative flex-1 rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3 text-left text-sm text-gray-400"
-          >
-            <div className="font-medium">Sales</div>
-            <div className="mt-1 text-xs text-gray-500">Sales agents are coming soon.</div>
-            <span className="mt-2 inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
-              Coming soon
-            </span>
-            <span className="pointer-events-none absolute inset-0 rounded-lg" aria-hidden="true" />
-          </button>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+          <span className="inline-flex items-center rounded-full bg-black px-3 py-1 text-white">
+            Customer Service (active)
+          </span>
+          <span className="inline-flex items-center rounded-full border border-dashed border-gray-300 px-3 py-1 text-gray-400">
+            Sales (coming soon)
+          </span>
         </div>
       </div>
 
-      {agentType === "customer_service" && (
-        <section className="rounded-lg border bg-slate-50 p-4">
-          <h4 className="text-sm font-semibold text-gray-900">Customer Service plan</h4>
-          <p className="mt-1 text-xs text-gray-600">
-            Your Customer Service plan was selected when your account was created. This is a reminder of your current coverage. Manage any changes from Billing.
-          </p>
-          <div className="mt-3 inline-flex items-center gap-3 rounded-lg bg-white px-4 py-3 shadow-sm">
-            <div className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
-              Current plan
-            </div>
-            <div className="text-sm font-semibold text-gray-900">{planDisplayLabel}</div>
-            <p className="text-xs text-gray-600">Manage plan and billing from the Billing section.</p>
-          </div>
-        </section>
-      )}
+      <section className="rounded-lg border bg-slate-50 p-4">
+        <h4 className="text-sm font-semibold text-gray-900">Your plan</h4>
+        <p className="mt-1 text-xs text-gray-600">
+          You’re currently on the <strong>{planDisplayLabel}</strong> plan. You can upgrade at any time to unlock more volume and analytics.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link href="/billing">
+            <button className="rounded-md bg-black px-3 py-1.5 text-xs font-medium text-white">
+              Upgrade plan
+            </button>
+          </Link>
+        </div>
+      </section>
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Agent name</label>
@@ -451,6 +480,45 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
           className="mt-1 w-full rounded-md border px-3 py-2"
         />
       </div>
+
+      <div className="mt-3 space-y-1">
+        <label htmlFor="agent-slug" className="text-sm font-medium">
+          Public slug
+        </label>
+        <p className="text-xs text-gray-500">
+          This will be used in your public agent URL. You can change it later.
+        </p>
+        <input
+          id="agent-slug"
+          type="text"
+          className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+          value={slug}
+          onChange={(e) => {
+            setSlug(e.target.value);
+            setSlugTouched(true);
+          }}
+          placeholder="my-agent"
+        />
+        <p className="mt-1 text-[11px] text-gray-500">
+          Example URL:{" "}
+          <span className="font-mono">
+            https://alwaysonduty.com/live/{tenant?.slug ?? "your-workspace"}/
+            {slug || "my-agent"}
+          </span>
+        </p>
+      </div>
+
+    <div className="mt-3 text-xs text-gray-500">
+      <div className="font-medium text-gray-700">Public page (coming soon)</div>
+      <div className="mt-1 rounded-md bg-gray-50 px-3 py-2 font-mono text-[11px] text-gray-600">
+        {process.env.NEXT_PUBLIC_APP_BASE_URL
+          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${slug || "(auto-from-name)"}`
+          : `https://alwaysonduty.com/${slug || "(auto-from-name)"}`}
+      </div>
+      <p className="mt-1">
+        We’ll use your agent slug to host a simple page where visitors can chat with this agent.
+      </p>
+    </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>

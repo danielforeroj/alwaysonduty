@@ -70,6 +70,35 @@ export const copy = {
       heading: "Find the right playbook for your industry",
       subheading: "OnDuty adapts to the channels and workflows your teams already use.",
     },
+    publicAgent: {
+      cta: "Learn more about OnDuty",
+      notFoundTitle: "Agent not found",
+      notFoundBody:
+        "We couldn't find an agent with that slug. Please confirm the link or contact the workspace owner.",
+      heroTag: "Live agent",
+      heroDescription:
+        "Chat with this workspace's OnDuty AI. Messages are answered instantly based on the company's playbook.",
+      aboutHeading: "About this agent",
+      about: {
+        type: "Agent type",
+        goal: "Primary goal",
+        company: "Company",
+        website: "Website",
+      },
+      chat: {
+        heading: "Chat live",
+        subheading: "Ask about products, policies, or anything else.",
+        badge: "Online",
+        starterTitle: "Start a conversation",
+        starterBody:
+          "Ask about products, policies, or anything else. Responses follow the workspace's instructions.",
+        placeholder: "Message the agent",
+        send: "Send",
+        sending: "Sending",
+        error: "We couldn’t send your message. Please try again.",
+        thinking: "Thinking...",
+      },
+    },
   },
   es: {
     nav: {
@@ -139,6 +168,35 @@ export const copy = {
     overview: {
       heading: "Encuentra el playbook ideal para tu industria",
       subheading: "OnDuty se adapta a los canales y flujos de trabajo que ya usas.",
+    },
+    publicAgent: {
+      cta: "Conoce más sobre OnDuty",
+      notFoundTitle: "Agente no encontrado",
+      notFoundBody:
+        "No pudimos encontrar un agente con ese enlace. Confirma el URL o contacta al dueño del workspace.",
+      heroTag: "Agente en vivo",
+      heroDescription:
+        "Chatea con el agente OnDuty de este workspace. Las respuestas siguen las instrucciones de la empresa al instante.",
+      aboutHeading: "Sobre este agente",
+      about: {
+        type: "Tipo de agente",
+        goal: "Objetivo principal",
+        company: "Empresa",
+        website: "Sitio web",
+      },
+      chat: {
+        heading: "Chat en vivo",
+        subheading: "Pregunta por productos, políticas o cualquier tema.",
+        badge: "En línea",
+        starterTitle: "Empieza una conversación",
+        starterBody:
+          "Pregunta por productos, políticas o cualquier tema. Las respuestas siguen las indicaciones del workspace.",
+        placeholder: "Escribe al agente",
+        send: "Enviar",
+        sending: "Enviando",
+        error: "No pudimos enviar tu mensaje. Intenta de nuevo.",
+        thinking: "Pensando...",
+      },
     },
   },
 };
