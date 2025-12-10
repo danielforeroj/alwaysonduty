@@ -508,21 +508,17 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
         </p>
       </div>
 
-      <div className="mt-3 text-xs text-gray-500">
-        <div className="font-medium text-gray-700">Public page (coming soon)</div>
-        <div className="mt-1 rounded-md bg-gray-50 px-3 py-2 font-mono text-[11px] text-gray-600">
-          {process.env.NEXT_PUBLIC_APP_BASE_URL
-            ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/live/${tenant?.slug ?? "your-workspace"}/${
-                slug || "(auto-from-name)"
-              }`
-            : `https://alwaysonduty.com/live/${tenant?.slug ?? "your-workspace"}/${
-                slug || "(auto-from-name)"
-              }`}
-        </div>
-        <p className="mt-1">
-          We’ll use your workspace and agent slug to host a simple page where visitors can chat with this agent.
-        </p>
+    <div className="mt-3 text-xs text-gray-500">
+      <div className="font-medium text-gray-700">Public page (coming soon)</div>
+      <div className="mt-1 rounded-md bg-gray-50 px-3 py-2 font-mono text-[11px] text-gray-600">
+        {process.env.NEXT_PUBLIC_APP_BASE_URL
+          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${slug || "(auto-from-name)"}`
+          : `https://alwaysonduty.com/${slug || "(auto-from-name)"}`}
       </div>
+      <p className="mt-1">
+        We’ll use your agent slug to host a simple page where visitors can chat with this agent.
+      </p>
+    </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>

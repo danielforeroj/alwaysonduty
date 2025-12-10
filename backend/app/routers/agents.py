@@ -116,6 +116,19 @@ def create_agent(
     return agent
 
 
+@router.get("/public/{slug}", response_model=AgentResponse)
+def get_public_agent(slug: str, db: Session = Depends(get_db)):
+    """Public endpoint to fetch an agent by slug without authentication."""
+    agent = (
+        db.query(Agent)
+        .filter(Agent.slug == slug, Agent.status != "disabled")
+        .first()
+    )
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return agent
+
+
 @router.get("/{agent_id}", response_model=AgentResponse)
 def get_agent(
     agent_id: UUID,
