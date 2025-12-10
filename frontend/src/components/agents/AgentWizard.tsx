@@ -44,6 +44,13 @@ const normalizeWebsite = (value: string | null | undefined): string | undefined 
   return `https://${trimmed}`;
 };
 
+const slugify = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "agent";
+
 const defaultJobAndCompany = (): JobAndCompanyProfile => ({
   agent_name: "OnDuty Assistant",
   primary_goal: "reduce_support_load",
@@ -93,8 +100,9 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
   const { token, logout, tenant } = useAuth();
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [name, setName] = useState("OnDuty Assistant");
-  const [slug, setSlug] = useState("");
+  const [name, setName] = useState(initialAgent?.name ?? "OnDuty Assistant");
+  const [slug, setSlug] = useState(initialAgent?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState<boolean>(!!initialAgent?.slug);
   const [status, setStatus] = useState<Agent["status"]>("draft");
   const agentType: Agent["agent_type"] = "customer_service";
 
@@ -133,6 +141,7 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       setName(initialAgent.name);
       setSlug(initialAgent.slug);
       setStatus(initialAgent.status);
+      setSlugTouched(true);
       setJobProfile({
         ...defaultJobAndCompany(),
         ...initialAgent.job_and_company_profile,
@@ -147,6 +156,12 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       setAllowedWebsites(initialAgent.allowed_websites ?? null);
     }
   }, [initialAgent]);
+
+  useEffect(() => {
+    if (!initialAgent && !slugTouched) {
+      setSlug(slugify(name));
+    }
+  }, [name, slugTouched, initialAgent]);
 
   useEffect(() => {
     const loadDocuments = async () => {
@@ -464,6 +479,33 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
           }}
           className="mt-1 w-full rounded-md border px-3 py-2"
         />
+      </div>
+
+      <div className="mt-3 space-y-1">
+        <label htmlFor="agent-slug" className="text-sm font-medium">
+          Public slug
+        </label>
+        <p className="text-xs text-gray-500">
+          This will be used in your public agent URL. You can change it later.
+        </p>
+        <input
+          id="agent-slug"
+          type="text"
+          className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+          value={slug}
+          onChange={(e) => {
+            setSlug(e.target.value);
+            setSlugTouched(true);
+          }}
+          placeholder="my-agent"
+        />
+        <p className="mt-1 text-[11px] text-gray-500">
+          Example URL:{" "}
+          <span className="font-mono">
+            https://alwaysonduty.com/live/{tenant?.slug ?? "your-workspace"}/
+            {slug || "my-agent"}
+          </span>
+        </p>
       </div>
 
       <div className="mt-3 text-xs text-gray-500">

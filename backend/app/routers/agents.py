@@ -1,6 +1,7 @@
 import logging
 import re
-from typing import List
+import uuid
+from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
@@ -24,18 +25,33 @@ def _slugify(value: str) -> str:
     return value.strip("-") or "agent"
 
 
-def _ensure_unique_slug(db: Session, tenant_id, base_slug: str) -> str:
+def _ensure_unique_slug(
+    db: Session,
+    tenant_id,
+    base_slug: str,
+    exclude_agent_id: Optional[uuid.UUID] = None,
+) -> str:
+    """
+    Ensure the slug is unique for this tenant.
+    If exclude_agent_id is provided, ignore that agent when checking for conflicts.
+    """
     slug = base_slug
     counter = 2
-    while (
-        db.query(Agent)
-        .filter(and_(Agent.slug == slug, Agent.tenant_id == tenant_id))
-        .first()
-        is not None
-    ):
+
+    while True:
+        query = db.query(Agent).filter(
+            Agent.tenant_id == tenant_id,
+            Agent.slug == slug,
+        )
+        if exclude_agent_id is not None:
+            query = query.filter(Agent.id != exclude_agent_id)
+
+        existing = query.first()
+        if existing is None:
+            return slug
+
         slug = f"{base_slug}-{counter}"
         counter += 1
-    return slug
 
 
 @router.get("", response_model=List[AgentResponse])
@@ -135,9 +151,13 @@ def update_agent(
         agent.name = payload.name
     if payload.slug is not None:
         desired_slug = _slugify(payload.slug)
-        agent.slug = _ensure_unique_slug(
-            db, tenant_id=current_user.tenant.id, base_slug=desired_slug
-        )
+        if desired_slug != agent.slug:
+            agent.slug = _ensure_unique_slug(
+                db,
+                tenant_id=current_user.tenant.id,
+                base_slug=desired_slug,
+                exclude_agent_id=agent.id,
+            )
     if payload.status is not None:
         agent.status = payload.status
     if payload.agent_type is not None:
