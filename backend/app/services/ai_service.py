@@ -38,6 +38,45 @@ def _get_active_agent_for_tenant(tenant_id) -> Optional[Agent]:
         session.close()
 
 
+def _fallback_reply(agent: Optional[Agent], tenant, messages: List[str]) -> str:
+    """Provide a graceful response when Groq is unavailable or fails.
+
+    We avoid vendor-specific language and instead echo back context we have
+    locally so the end user still gets a helpful reply.
+    """
+    last_message = next((m for m in reversed(messages) if m), "")
+    company_name = None
+    agent_name = None
+    primary_goal = None
+
+    if agent:
+        agent_name = agent.name
+        company_name = agent.job_and_company_profile.get("company_name")
+        primary_goal = agent.job_and_company_profile.get("primary_goal")
+
+    if not company_name:
+        company_name = getattr(tenant, "name", None) or "this business"
+
+    prompt_closure = (
+        f"Thanks for reaching out to {company_name}. "
+        "I'm here to help with questions and share details about what we do."
+    )
+
+    if last_message:
+        return (
+            f"{prompt_closure} You mentioned: '{last_message}'. "
+            "Let me share the most relevant information I have and, if needed, "
+            "I can connect you with a human teammate."
+        )
+
+    if agent_name or primary_goal:
+        goal_text = f" My focus is on {primary_goal.replace('_', ' ')}." if primary_goal else ""
+        name_text = f" I'm {agent_name}," if agent_name else ""
+        return f"{prompt_closure}{name_text}{goal_text} How can I help today?"
+
+    return f"{prompt_closure} How can I help today?"
+
+
 def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
     """
     Generate a reply for the given tenant and agent_type using Groq.
@@ -53,8 +92,9 @@ def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
       demo message instead of raising.
     """
     if not settings.groq_api_key:
-        logger.warning("GROQ_API_KEY is not configured; returning demo response.")
-        return "This is a demo response from the OnDuty agent."
+        logger.warning("GROQ_API_KEY is not configured; using local fallback reply.")
+        agent = _get_active_agent_for_tenant(tenant.id)
+        return _fallback_reply(agent, tenant, messages)
 
     client = Groq(api_key=settings.groq_api_key)
 
@@ -69,6 +109,11 @@ def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
             "Respond helpfully, accurately, and concisely."
         )
         model_name = settings.groq_default_model
+
+    # Prefer a known-good fallback model if configuration provides an invalid one.
+    fallback_model = "llama3-70b-8192"
+    if not model_name:
+        model_name = fallback_model
 
     # Build Groq messages: one system message + one user message per input string.
     groq_messages = [{"role": "system", "content": system_prompt}]
@@ -89,7 +134,15 @@ def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
         return completion.choices[0].message.content
     except Exception as exc:
         logger.exception("Groq chat.completions.create failed: %s", exc)
-        return (
-            "I'm having trouble answering right now. "
-            "Please try again in a moment or ask to speak with a human."
-        )
+
+        if model_name != fallback_model:
+            try:
+                completion = client.chat.completions.create(
+                    model=fallback_model,
+                    messages=groq_messages,
+                )
+                return completion.choices[0].message.content
+            except Exception as fallback_exc:
+                logger.exception("Groq fallback model failed: %s", fallback_exc)
+
+        return _fallback_reply(agent, tenant, messages)
