@@ -165,7 +165,7 @@ class AgentResponse(AgentBase):
     id: UUID
     tenant_id: UUID
     model_provider: str
-    model_name: str
+    model_name: Optional[str]
     training_mode: str
     created_at: datetime
     updated_at: datetime
