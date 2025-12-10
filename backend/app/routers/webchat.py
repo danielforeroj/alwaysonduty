@@ -59,7 +59,12 @@ def send_message(payload: WebChatRequest, db: Session = Depends(get_db)):
     )
 
     user_message = conversation_service.add_message(db, conversation_id=conversation.id, sender="user", text=payload.text)
-    reply_text = ai_service.generate_reply(tenant, conversation.agent_type, [payload.text])
+    reply_text = ai_service.generate_reply(
+        tenant,
+        conversation.agent_type,
+        [payload.text],
+        agent=agent,
+    )
     ai_message = conversation_service.add_message(db, conversation_id=conversation.id, sender="ai", text=reply_text)
 
     return {
