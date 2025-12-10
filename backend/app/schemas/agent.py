@@ -135,7 +135,7 @@ class AllowedWebsite(BaseModel):
 
 class AgentBase(BaseModel):
     name: str
-    slug: str
+    slug: Optional[str] = None
     status: Literal["draft", "active", "disabled"] = "draft"
     agent_type: AgentType = "customer_service"
 
@@ -151,6 +151,7 @@ class AgentCreate(AgentBase):
 
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
+    slug: Optional[str] = None
     status: Optional[Literal["draft", "active", "disabled"]] = None
     agent_type: Optional[AgentType] = None
 
