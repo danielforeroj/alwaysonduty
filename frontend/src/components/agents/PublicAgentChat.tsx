@@ -60,9 +60,11 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
     setInput("");
     setLoading(true);
 
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000);
+      timeoutId = setTimeout(() => controller.abort(), 20000);
 
       const res = await fetch(`${API_BASE}/api/webchat/send`, {
         method: "POST",
@@ -94,7 +96,9 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
         setError(t.error);
       }
     } finally {
-      clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       setLoading(false);
     }
   };
@@ -156,7 +160,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{t.error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex gap-2 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm">
         <input
