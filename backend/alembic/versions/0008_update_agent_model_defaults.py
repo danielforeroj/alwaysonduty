@@ -9,16 +9,7 @@ depends_on = None
 
 
 def upgrade():
-    # 1) Clear out any known bad model IDs so runtime will fall back to env config
-    op.execute(
-        """
-        UPDATE agents
-        SET model_name = NULL
-        WHERE model_name IN ('llama-3.1-70b', 'llama3-70b-8192');
-        """
-    )
-
-    # 2) Drop the server default and allow NULLs for model_name
+    # Allow model_name to be NULL and remove any DB-level default.
     op.alter_column(
         "agents",
         "model_name",
@@ -29,7 +20,7 @@ def upgrade():
 
 
 def downgrade():
-    # Revert to previous non-nullable column with a default, if needed
+    # If ever downgraded, restore NOT NULL + a default.
     op.alter_column(
         "agents",
         "model_name",
