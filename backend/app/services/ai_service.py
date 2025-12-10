@@ -104,11 +104,17 @@ def _fallback_reply(agent: Optional[Agent], tenant, messages: List[str]) -> str:
     return f"{prompt_closure} How can I help today?"
 
 
-def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
+def generate_reply(
+    tenant,
+    agent_type: str,
+    messages: List[str],
+    agent: Optional[Agent] = None,
+) -> str:
     """
     Generate a reply for the given tenant and agent_type using Groq.
 
-    - Looks up the most recent active Agent for the tenant.
+    - Uses an explicitly provided Agent when available.
+    - Otherwise looks up the most recent active Agent for the tenant.
     - Builds a system prompt from that Agent (if found).
     - Calls Groq's Chat Completions API with the system prompt + user messages.
 
@@ -120,12 +126,13 @@ def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
     """
     if not settings.groq_api_key:
         logger.warning("GROQ_API_KEY is not configured; using local fallback reply.")
-        agent = _get_active_agent_for_tenant(tenant.id)
-        return _fallback_reply(agent, tenant, messages)
+        explicit_or_default_agent = agent or _get_active_agent_for_tenant(tenant.id)
+        return _fallback_reply(explicit_or_default_agent, tenant, messages)
 
     client = Groq(api_key=settings.groq_api_key)
 
-    agent = _get_active_agent_for_tenant(tenant.id)
+    if agent is None:
+        agent = _get_active_agent_for_tenant(tenant.id)
     if agent:
         system_prompt = build_agent_system_prompt(agent)
     else:
