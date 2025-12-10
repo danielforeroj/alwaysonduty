@@ -27,19 +27,28 @@ export default function LoginPage() {
       setSubmitting(false);
       return;
     }
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     try {
       const res = await fetch(`${base}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
+        signal: controller.signal,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || "Login failed");
       setAuth(data);
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Something went wrong");
+      if (err?.name === "AbortError") {
+        setError("Login is taking too long. Please try again.");
+      } else {
+        setError(err.message || "Something went wrong");
+      }
     } finally {
+      clearTimeout(timeoutId);
       setSubmitting(false);
     }
   };

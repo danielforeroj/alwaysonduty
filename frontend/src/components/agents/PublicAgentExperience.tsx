@@ -10,8 +10,8 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
   const t = useCopy().publicAgent;
 
   return (
-    <main className="mx-auto max-w-5xl -mt-8 px-6 pb-6 pt-2">
-      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 p-4 text-white shadow-lg">
+    <main className="mx-auto max-w-5xl -mt-6 min-h-screen px-6 pb-8 pt-2">
+      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 p-2 text-white shadow-lg md:p-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-200">{t.heroTag}</p>
@@ -29,7 +29,7 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
       </header>
 
       <section className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2">
+        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 flex min-h-[60vh] flex-col">
           <PublicAgentChat
             agentSlug={agent.slug}
             agentName={agent.name}

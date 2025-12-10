@@ -12,12 +12,12 @@ export type ChatMessage = {
 const STARTER_MESSAGE: ChatMessage = {
   role: "assistant",
   content:
-    "Hi, I’m OnDuty’s demo agent. Ask me anything about OnDuty, our platform, and how we can run 24/7 sales & support for you.",
+    "Hi, I’m OnDuty’s agent. Ask me anything about OnDuty, our platform, and how we can run 24/7 sales & support for you.",
 };
 
 const COMPANY_NAME = "OnDuty";
 const COMPANY_WEBSITE = "https://alwaysonduty.ai";
-const AGENT_NAME = "OnDuty Demo Agent";
+const AGENT_NAME = "OnDuty Agent";
 const COMPANY_SUMMARY =
   "AI-powered 24/7 web agents for customer support today, with sales and multi-channel deployments on the near-term roadmap.";
 
@@ -45,11 +45,15 @@ export default function TryPage() {
     setIsLoading(true);
     setError(null);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
     try {
       const response = await fetch("/api/onduty-try", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: nextMessages }),
+        signal: controller.signal,
       });
 
       const data = await response.json();
@@ -64,21 +68,26 @@ export default function TryPage() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Our demo agent had trouble replying. Please try again.");
+      if (err?.name === "AbortError") {
+        setError("The agent is taking too long to reply. Please try again.");
+      } else {
+        setError("Our agent had trouble replying. Please try again.");
+      }
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
 
   return (
-    <main className="mx-auto max-w-5xl -mt-8 px-6 pb-6 pt-2">
-      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 p-4 text-white shadow-lg">
+    <main className="mx-auto max-w-5xl -mt-6 min-h-screen px-6 pb-8 pt-2">
+      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 p-2 text-white shadow-lg md:p-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-200">Try OnDuty</p>
-            <h1 className="mt-1 text-2xl font-semibold">Talk with our demo agent</h1>
+            <h1 className="mt-1 text-2xl font-semibold">Talk with our agent</h1>
             <p className="mt-1 text-xs text-slate-200">{COMPANY_NAME}</p>
             <p className="mt-3 max-w-2xl text-xs text-slate-200">
               Ask anything about OnDuty’s platform, use cases, roadmap, or how we onboard new businesses.
@@ -88,10 +97,10 @@ export default function TryPage() {
       </header>
 
       <section className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2">
+        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 flex min-h-[60vh] flex-col">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">Demo chat</p>
+              <p className="text-xs uppercase tracking-wide text-slate-500">Live chat</p>
               <h2 className="text-lg font-semibold text-slate-900">{AGENT_NAME}</h2>
               <p className="text-sm text-slate-600">{COMPANY_NAME}</p>
             </div>
@@ -100,7 +109,7 @@ export default function TryPage() {
 
           <div
             ref={scrollRef}
-            className="mt-4 max-h-[65vh] min-h-[18rem] h-[50vh] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+            className="mt-4 min-h-[16rem] h-[48vh] sm:h-[54vh] md:h-[60vh] max-h-[75vh] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
           >
             <div className="flex min-h-full flex-col justify-end gap-3">
               {messages.map((message, idx) => (
@@ -140,7 +149,7 @@ export default function TryPage() {
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask the demo agent about OnDuty"
+              placeholder="Ask the agent about OnDuty"
               className="min-h-[3rem] flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
               disabled={isLoading}
             />
@@ -151,7 +160,7 @@ export default function TryPage() {
         </div>
 
         <aside className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
-          <h3 className="text-sm font-semibold text-slate-900">About this demo</h3>
+          <h3 className="text-sm font-semibold text-slate-900">About this agent</h3>
           <dl className="mt-3 space-y-2 text-xs text-slate-700">
             <div>
               <dt className="text-slate-500">Company</dt>

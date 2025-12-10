@@ -60,7 +60,12 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
     setInput("");
     setLoading(true);
 
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     try {
+      timeoutId = setTimeout(() => controller.abort(), 20000);
+
       const res = await fetch(`${API_BASE}/api/webchat/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,6 +75,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
           session_id: sessionId,
           text,
         }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -83,9 +89,16 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
         text: data.reply || t.starterBody,
       };
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (err) {
-      setError(t.error);
+    } catch (err: any) {
+      if (err?.name === "AbortError") {
+        setError(t.timeout || t.error);
+      } else {
+        setError(t.error);
+      }
     } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       setLoading(false);
     }
   };
@@ -112,7 +125,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
 
       <div
         ref={scrollRef}
-        className="max-h-[65vh] min-h-[18rem] h-[50vh] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+        className="min-h-[16rem] h-[48vh] sm:h-[54vh] md:h-[60vh] max-h-[75vh] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
       >
         <div className="flex min-h-full flex-col justify-end gap-3">
           {messages.length === 0 && (
@@ -147,7 +160,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{t.error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex gap-2 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm">
         <input
