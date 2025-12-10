@@ -12,6 +12,33 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
+# Known invalid / deprecated model IDs we never want to call again.
+_BAD_GROQ_MODELS = {
+    "llama-3.1-70b",
+    "llama3-70b-8192",
+}
+
+
+def _resolve_model(agent: Optional[Agent]) -> str:
+    """
+    Decide which Groq model ID to use.
+
+    Priority:
+    1) Per-agent override (if set and not in _BAD_GROQ_MODELS)
+    2) GROQ_DEFAULT_MODEL from settings
+    3) Final hardcoded safety fallback for local/dev use
+    """
+    # 1) Agent override
+    if agent and agent.model_name and agent.model_name not in _BAD_GROQ_MODELS:
+        return agent.model_name
+
+    # 2) Global default from env/config, if set
+    if settings.groq_default_model:
+        return settings.groq_default_model
+
+    # 3) Last-resort safety net (should rarely be used in production)
+    return "llama-3.3-70b-versatile"
+
 
 def _get_active_agent_for_tenant(tenant_id) -> Optional[Agent]:
     """
@@ -77,11 +104,17 @@ def _fallback_reply(agent: Optional[Agent], tenant, messages: List[str]) -> str:
     return f"{prompt_closure} How can I help today?"
 
 
-def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
+def generate_reply(
+    tenant,
+    agent_type: str,
+    messages: List[str],
+    agent: Optional[Agent] = None,
+) -> str:
     """
     Generate a reply for the given tenant and agent_type using Groq.
 
-    - Looks up the most recent active Agent for the tenant.
+    - Uses an explicitly provided Agent when available.
+    - Otherwise looks up the most recent active Agent for the tenant.
     - Builds a system prompt from that Agent (if found).
     - Calls Groq's Chat Completions API with the system prompt + user messages.
 
@@ -93,27 +126,25 @@ def generate_reply(tenant, agent_type: str, messages: List[str]) -> str:
     """
     if not settings.groq_api_key:
         logger.warning("GROQ_API_KEY is not configured; using local fallback reply.")
-        agent = _get_active_agent_for_tenant(tenant.id)
-        return _fallback_reply(agent, tenant, messages)
+        explicit_or_default_agent = agent or _get_active_agent_for_tenant(tenant.id)
+        return _fallback_reply(explicit_or_default_agent, tenant, messages)
 
     client = Groq(api_key=settings.groq_api_key)
 
-    agent = _get_active_agent_for_tenant(tenant.id)
+    if agent is None:
+        agent = _get_active_agent_for_tenant(tenant.id)
     if agent:
         system_prompt = build_agent_system_prompt(agent)
-        model_name = agent.model_name or settings.groq_default_model
     else:
         company_name = getattr(tenant, "name", "this business")
         system_prompt = (
             f"You are OnDuty, an AI assistant for {company_name}. "
             "Respond helpfully, accurately, and concisely."
         )
-        model_name = settings.groq_default_model
-
-    # Prefer a known-good fallback model if configuration provides an invalid one.
-    fallback_model = "llama3-70b-8192"
-    if not model_name:
-        model_name = fallback_model
+    # Primary model: per-agent or global default
+    model_name = _resolve_model(agent)
+    # Fallback model: global default (or safety net) with no per-agent override
+    fallback_model = _resolve_model(None)
 
     # Build Groq messages: one system message + one user message per input string.
     groq_messages = [{"role": "system", "content": system_prompt}]

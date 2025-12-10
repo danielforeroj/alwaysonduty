@@ -10,7 +10,7 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
   const t = useCopy().publicAgent;
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-6">
+    <main className="mx-auto max-w-5xl -mt-8 px-6 pb-6 pt-2">
       <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 p-4 text-white shadow-lg">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -40,21 +40,13 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
           <h3 className="text-sm font-semibold text-slate-900">{t.aboutHeading}</h3>
           <dl className="mt-3 space-y-2 text-xs text-slate-700">
             <div>
-              <dt className="text-slate-500">{t.about.type}</dt>
-              <dd className="font-medium capitalize">{agent.agent_type.replace("_", " ")}</dd>
-            </div>
-            <div>
-              <dt className="text-slate-500">{t.about.goal}</dt>
-              <dd className="font-medium">{agent.job_and_company_profile.primary_goal.replace("_", " ")}</dd>
-            </div>
-            <div>
               <dt className="text-slate-500">{t.about.company}</dt>
-              <dd className="font-medium">{agent.job_and_company_profile.company_name}</dd>
+              <dd className="font-medium">{agent.job_and_company_profile.company_name || "—"}</dd>
             </div>
-            {agent.job_and_company_profile.company_website && (
-              <div>
-                <dt className="text-slate-500">{t.about.website}</dt>
-                <dd>
+            <div>
+              <dt className="text-slate-500">{t.about.website}</dt>
+              <dd>
+                {agent.job_and_company_profile.company_website ? (
                   <a
                     href={agent.job_and_company_profile.company_website}
                     className="font-medium text-blue-600 hover:text-blue-700"
@@ -63,9 +55,21 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
                   >
                     {agent.job_and_company_profile.company_website}
                   </a>
-                </dd>
-              </div>
-            )}
+                ) : (
+                  <span className="font-medium">—</span>
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">{t.about.agentName}</dt>
+              <dd className="font-medium">{agent.name}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">{t.about.summary}</dt>
+              <dd className="font-medium">
+                {agent.job_and_company_profile.short_description || "No summary provided."}
+              </dd>
+            </div>
           </dl>
         </aside>
       </section>
