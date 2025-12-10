@@ -27,15 +27,15 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
         </div>
       </header>
 
-      <section className="mt-4 grid flex-1 gap-4 lg:grid-cols-3">
-        <div className="flex min-h-[55vh] flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 lg:h-[calc(100vh-220px)]">
+      <section className="mt-4 grid flex-1 gap-4 lg:h-[calc(100vh-200px)] lg:grid-cols-3">
+        <div className="flex min-h-[60vh] flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 lg:h-full">
           <PublicAgentChat
             agentSlug={agent.slug}
             agentName={agent.name}
             companyName={agent.job_and_company_profile.company_name}
           />
         </div>
-        <aside className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+        <aside className="flex min-h-[60vh] flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:h-full">
           <h3 className="text-sm font-semibold text-slate-900">{t.aboutHeading}</h3>
           <dl className="mt-3 space-y-2 text-xs text-slate-700">
             <div>

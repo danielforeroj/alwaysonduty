@@ -26,11 +26,20 @@ export default function TryPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (!inputRef.current) return;
+    const el = inputRef.current;
+    el.style.height = "auto";
+    const maxHeight = 4 * 24;
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+  }, [input]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -92,8 +101,8 @@ export default function TryPage() {
         </div>
       </header>
 
-      <section className="mt-4 grid flex-1 gap-4 lg:grid-cols-3">
-        <div className="flex min-h-[55vh] flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 lg:h-[calc(100vh-220px)]">
+      <section className="mt-4 grid flex-1 gap-4 lg:h-[calc(100vh-200px)] lg:grid-cols-3">
+        <div className="flex min-h-[60vh] flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 lg:h-full">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-500">Live chat</p>
@@ -105,7 +114,7 @@ export default function TryPage() {
 
           <div
             ref={scrollRef}
-            className="mt-4 flex-1 min-h-[16rem] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+            className="mt-4 flex-1 min-h-[18rem] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
           >
             <div className="flex min-h-full flex-col justify-end gap-3">
               {messages.map((message, idx) => (
@@ -143,10 +152,12 @@ export default function TryPage() {
             className="mt-3 flex items-start gap-3 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm"
           >
             <textarea
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask the agent about OnDuty"
-              className="min-h-[3rem] flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+              rows={1}
+              className="min-h-[2.75rem] max-h-24 flex-1 resize-none overflow-y-auto rounded-xl border border-slate-200 px-3 py-2 text-sm leading-6 focus:border-slate-400 focus:outline-none"
               disabled={isLoading}
             />
             <PrimaryButton type="submit" disabled={isLoading || !input.trim()}>
@@ -155,7 +166,7 @@ export default function TryPage() {
           </form>
         </div>
 
-        <aside className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+        <aside className="flex min-h-[60vh] flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:h-full">
           <h3 className="text-sm font-semibold text-slate-900">About this agent</h3>
           <dl className="mt-3 space-y-2 text-xs text-slate-700">
             <div>
