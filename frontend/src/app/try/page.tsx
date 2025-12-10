@@ -11,8 +11,7 @@ export type ChatMessage = {
 
 const STARTER_MESSAGE: ChatMessage = {
   role: "assistant",
-  content:
-    "Hi, I’m OnDuty’s agent. Ask me anything about OnDuty, our platform, and how we can run 24/7 sales & support for you.",
+  content: "Hi, I’m OnDuty’s agent. How can I help you learn about OnDuty?",
 };
 
 const COMPANY_NAME = "OnDuty";
@@ -82,22 +81,19 @@ export default function TryPage() {
   };
 
   return (
-    <main className="mx-auto max-w-5xl -mt-6 min-h-screen px-6 pb-8 pt-2">
-      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 p-2 text-white shadow-lg md:p-3">
+    <main className="mx-auto -mt-6 flex min-h-screen max-w-5xl flex-col px-6 pb-8 pt-2">
+      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 px-3 py-2 text-white shadow-lg md:py-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-200">Try OnDuty</p>
             <h1 className="mt-1 text-2xl font-semibold">Talk with our agent</h1>
             <p className="mt-1 text-xs text-slate-200">{COMPANY_NAME}</p>
-            <p className="mt-3 max-w-2xl text-xs text-slate-200">
-              Ask anything about OnDuty’s platform, use cases, roadmap, or how we onboard new businesses.
-            </p>
           </div>
         </div>
       </header>
 
-      <section className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 flex min-h-[60vh] flex-col">
+      <section className="mt-4 grid flex-1 gap-4 lg:grid-cols-3">
+        <div className="flex min-h-[55vh] flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 lg:h-[calc(100vh-220px)]">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-500">Live chat</p>
@@ -109,7 +105,7 @@ export default function TryPage() {
 
           <div
             ref={scrollRef}
-            className="mt-4 min-h-[16rem] h-[48vh] sm:h-[54vh] md:h-[60vh] max-h-[75vh] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+            className="mt-4 flex-1 min-h-[16rem] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
           >
             <div className="flex min-h-full flex-col justify-end gap-3">
               {messages.map((message, idx) => (

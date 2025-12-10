@@ -111,7 +111,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
   };
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex h-full min-h-[50vh] flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-500">{t.heading}</p>
@@ -125,7 +125,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
 
       <div
         ref={scrollRef}
-        className="min-h-[16rem] h-[48vh] sm:h-[54vh] md:h-[60vh] max-h-[75vh] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+        className="flex-1 min-h-[16rem] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
       >
         <div className="flex min-h-full flex-col justify-end gap-3">
           {messages.length === 0 && (

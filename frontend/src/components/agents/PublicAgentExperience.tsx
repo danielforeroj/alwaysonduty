@@ -10,14 +10,13 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
   const t = useCopy().publicAgent;
 
   return (
-    <main className="mx-auto max-w-5xl -mt-6 min-h-screen px-6 pb-8 pt-2">
-      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 p-2 text-white shadow-lg md:p-3">
+    <main className="mx-auto -mt-6 flex min-h-screen max-w-5xl flex-col px-6 pb-8 pt-2">
+      <header className="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 px-3 py-2 text-white shadow-lg md:py-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-200">{t.heroTag}</p>
             <h1 className="mt-1 text-2xl font-semibold">{agent.name}</h1>
             <p className="mt-1 text-xs text-slate-200">{agent.job_and_company_profile.company_name}</p>
-            <p className="mt-3 max-w-2xl text-xs text-slate-200">{t.heroDescription}</p>
           </div>
           <Link
             href="/"
@@ -28,8 +27,8 @@ export default function PublicAgentExperience({ agent }: { agent: Agent }) {
         </div>
       </header>
 
-      <section className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 flex min-h-[60vh] flex-col">
+      <section className="mt-4 grid flex-1 gap-4 lg:grid-cols-3">
+        <div className="flex min-h-[55vh] flex-col rounded-xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur lg:col-span-2 lg:h-[calc(100vh-220px)]">
           <PublicAgentChat
             agentSlug={agent.slug}
             agentName={agent.name}
