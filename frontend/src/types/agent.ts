@@ -1,3 +1,5 @@
+import type { RegionId } from "@/constants/locations";
+
 export type AgentStatus = "draft" | "active" | "disabled";
 export type AgentType = "customer_service" | "sales";
 
@@ -51,7 +53,7 @@ export interface CustomerSegment {
 
 export interface CustomerProfile {
   target_segments: CustomerSegment[];
-  regions: string[];
+  regions: RegionId[];
   countries: string[];
   languages: string[];
 

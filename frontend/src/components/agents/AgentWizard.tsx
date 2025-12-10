@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { COUNTRY_OPTIONS, REGION_OPTIONS, type RegionId } from "@/constants/locations";
 import {
   Agent,
   AgentType,
@@ -87,6 +88,12 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
 
   const [jobProfile, setJobProfile] = useState<JobAndCompanyProfile>(defaultJobAndCompany());
   const [customerProfile, setCustomerProfile] = useState<CustomerProfile>(defaultCustomerProfile());
+  const [regions, setRegions] = useState<RegionId[]>(
+    initialAgent?.customer_profile?.regions ?? []
+  );
+  const [countries, setCountries] = useState<string[]>(
+    initialAgent?.customer_profile?.countries ?? []
+  );
   const [dataProfile, setDataProfile] = useState<DataProfile | null>(defaultDataProfile());
   const [allowedWebsites, setAllowedWebsites] = useState<AllowedWebsite[] | null>(null);
 
@@ -123,6 +130,8 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
         ...defaultCustomerProfile(),
         ...initialAgent.customer_profile,
       });
+      setRegions(initialAgent.customer_profile.regions ?? []);
+      setCountries(initialAgent.customer_profile.countries ?? []);
       setDataProfile(initialAgent.data_profile ?? defaultDataProfile());
       setAllowedWebsites(initialAgent.allowed_websites ?? null);
     }
@@ -149,6 +158,35 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
     };
     loadDocuments();
   }, [token, mode, initialAgent?.id, logout, router]);
+
+  const availableCountries = COUNTRY_OPTIONS.filter((c) =>
+    regions.includes(c.region)
+  );
+
+  const handleToggleRegion = (regionId: RegionId) => {
+    setRegions((prev) => {
+      const exists = prev.includes(regionId);
+      const next = exists ? prev.filter((r) => r !== regionId) : [...prev, regionId];
+
+      const allowedNames = COUNTRY_OPTIONS.filter((c) =>
+        next.includes(c.region)
+      ).map((c) => c.name);
+
+      setCountries((prevCountries) =>
+        prevCountries.filter((name) => allowedNames.includes(name))
+      );
+
+      return next;
+    });
+  };
+
+  const handleToggleCountry = (countryName: string) => {
+    setCountries((prev) =>
+      prev.includes(countryName)
+        ? prev.filter((c) => c !== countryName)
+        : [...prev, countryName]
+    );
+  };
 
   const handleAddSegment = () => {
     setCustomerProfile((prev) => ({
@@ -240,13 +278,19 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
       environment_future: [],
     };
 
+    const customerProfileState: CustomerProfile = {
+      ...customerProfile,
+      regions,
+      countries,
+    };
+
     const payload = {
       name,
       slug,
       status,
       agent_type: agentType,
       job_and_company_profile: jobProfileForPayload,
-      customer_profile: customerProfile,
+      customer_profile: customerProfileState,
       data_profile: dataProfile && dataProfile.strategy_notes === "" && (dataProfile.authoritative_doc_ids?.length ?? 0) === 0 && dataProfile.out_of_date_notes === "" ? null : dataProfile,
       allowed_websites: allowedWebsites && allowedWebsites.length > 0 ? allowedWebsites : null,
     };
@@ -637,24 +681,100 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Regions</label>
-          <input
-            value={customerProfile.regions.join(", ")}
-            onChange={(e) => setCustomerProfile({ ...customerProfile, regions: e.target.value.split(",").map((v) => v.trim()).filter(Boolean) })}
-            placeholder="LATAM, US & Canada"
-            className="mt-1 w-full rounded-md border px-3 py-2"
-          />
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Regions</label>
+          <p className="text-xs text-gray-500">
+            Where do most of your customers come from? You can select more than one.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {REGION_OPTIONS.map((option) => {
+              const checked = regions.includes(option.id);
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => handleToggleRegion(option.id)}
+                  className={[
+                    "inline-flex items-center rounded-full border px-3 py-1 text-xs",
+                    checked
+                      ? "border-black bg-black text-white"
+                      : "border-gray-200 bg-white text-gray-700",
+                  ].join(" ")}
+                >
+                  <span className="mr-1 h-2 w-2 rounded-full border border-current bg-current/80" />
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Countries</label>
-          <input
-            value={customerProfile.countries.join(", ")}
-            onChange={(e) => setCustomerProfile({ ...customerProfile, countries: e.target.value.split(",").map((v) => v.trim()).filter(Boolean) })}
-            placeholder="Mexico, USA, Canada"
-            className="mt-1 w-full rounded-md border px-3 py-2"
-          />
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Countries</label>
+          <p className="text-xs text-gray-500">
+            Choose specific countries within those regions (optional).
+          </p>
+
+          {regions.length === 0 ? (
+            <p className="text-xs text-gray-400">Select at least one region to choose countries.</p>
+          ) : (
+            <div className="relative inline-block w-full max-w-md">
+              {/* Simple multi-select "dropdown" */}
+              <details className="group w-full">
+                <summary className="flex cursor-pointer items-center justify-between rounded-md border bg-white px-3 py-2 text-xs text-gray-700">
+                  <span>
+                    {countries.length === 0
+                      ? "Select one or more countries"
+                      : `${countries.length} country${countries.length > 1 ? "ies" : ""} selected`}
+                  </span>
+                  <span className="ml-2 text-gray-400 group-open:rotate-180">▾</span>
+                </summary>
+                <div className="absolute z-10 mt-1 max-h-64 w-full overflow-auto rounded-md border bg-white p-2 text-xs shadow-md">
+                  {availableCountries.map((option) => {
+                    const checked = countries.includes(option.name);
+                    return (
+                      <label
+                        key={option.code}
+                        className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          className="h-3 w-3"
+                          checked={checked}
+                          onChange={() => handleToggleCountry(option.name)}
+                        />
+                        <span>{option.name}</span>
+                        <span className="ml-auto text-[10px] uppercase text-gray-400">{option.region}</span>
+                      </label>
+                    );
+                  })}
+                  {availableCountries.length === 0 && (
+                    <p className="px-2 py-1 text-[11px] text-gray-400">
+                      No countries available for the selected regions.
+                    </p>
+                  )}
+                </div>
+              </details>
+
+              {/* Selected chips */}
+              {countries.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {countries.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => handleToggleCountry(name)}
+                      className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700"
+                    >
+                      {name}
+                      <span className="ml-1 text-gray-400">×</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
