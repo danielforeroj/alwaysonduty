@@ -23,6 +23,9 @@ def create_tenant(
     billing_status: str = "trial",
     stripe_customer_id: Optional[str] = None,
     stripe_subscription_id: Optional[str] = None,
+    is_special_permissioned: bool = False,
+    trial_days_override: Optional[int] = None,
+    card_required: Optional[bool] = None,
 ) -> Tenant:
     base_slug = slug or slugify(name)
     candidate = base_slug
@@ -38,6 +41,9 @@ def create_tenant(
             billing_status=billing_status,
             stripe_customer_id=stripe_customer_id,
             stripe_subscription_id=stripe_subscription_id,
+            is_special_permissioned=is_special_permissioned,
+            trial_days_override=trial_days_override,
+            card_required=card_required,
         )
         db.add(tenant)
         try:
