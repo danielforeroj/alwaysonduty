@@ -6,6 +6,16 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const resolveApiBase = () => API_BASE || (typeof window !== "undefined" ? window.location.origin : "");
 
+const buildResetUrl = (path: string) => {
+  const base = resolveApiBase();
+  if (!base) return "";
+  try {
+    return new URL(path, base).toString();
+  } catch {
+    return "";
+  }
+};
+
 export default function SuperAdminForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -17,8 +27,8 @@ export default function SuperAdminForgotPasswordPage() {
     setMessage(null);
     setError(null);
 
-    const base = resolveApiBase();
-    if (!base) {
+    const endpoint = buildResetUrl("/api/super-admin/request-password-reset");
+    if (!endpoint) {
       setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
       return;
     }
@@ -28,7 +38,7 @@ export default function SuperAdminForgotPasswordPage() {
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const res = await fetch(`${base}/api/super-admin/request-password-reset`, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

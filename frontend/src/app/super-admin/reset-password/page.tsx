@@ -7,6 +7,16 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const resolveApiBase = () => API_BASE || (typeof window !== "undefined" ? window.location.origin : "");
 
+const buildApiUrl = (path: string) => {
+  const base = resolveApiBase();
+  if (!base) return "";
+  try {
+    return new URL(path, base).toString();
+  } catch {
+    return "";
+  }
+};
+
 function ResetPasswordForm() {
   const params = useSearchParams();
   const token = params.get("token") || "";
@@ -29,8 +39,8 @@ function ResetPasswordForm() {
       setError("Passwords do not match.");
       return;
     }
-    const base = resolveApiBase();
-    if (!base) {
+    const endpoint = buildApiUrl("/api/auth/reset-password");
+    if (!endpoint) {
       setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
       return;
     }
@@ -40,7 +50,7 @@ function ResetPasswordForm() {
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const res = await fetch(`${base}/api/auth/reset-password`, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, new_password: password }),
