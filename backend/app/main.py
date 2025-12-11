@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth, billing, conversations, customers, dashboard, health, webchat, agents
+from app.routers import auth, billing, conversations, customers, dashboard, health, super_admin, webchat, agents
 
 app = FastAPI(title="OnDuty API")
 
@@ -29,6 +29,7 @@ app.include_router(conversations.router, prefix="/api/conversations", tags=["con
 app.include_router(customers.router, prefix="/api/customers", tags=["customers"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
+app.include_router(super_admin.router, prefix="/api", tags=["super-admin"])
 
 
 @app.get("/")
