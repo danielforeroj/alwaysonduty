@@ -102,7 +102,10 @@ def request_password_reset(
     normalized_email = payload.email.strip().lower()
     user = db.query(User).filter(User.email == normalized_email).first()
     if user and user.role == "SUPER_ADMIN":
-        return {"detail": "Super admin password resets must be requested at /super-admin/forgot-password."}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Super admin password resets must be requested at /super-admin/forgot-password.",
+        )
 
     user, token = auth_service.request_password_reset(db, normalized_email)
     if user and token:
