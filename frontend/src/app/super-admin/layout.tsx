@@ -17,14 +17,22 @@ export default function SuperAdminLayout({ children }: { children: ReactNode }) 
   const router = useRouter();
   const pathname = usePathname();
 
+  const publicPaths = [
+    "/super-admin",
+    "/super-admin/forgot-password",
+    "/super-admin/reset-password",
+  ];
+
+  const isPublicPath = publicPaths.some((path) => pathname?.startsWith(path));
+
   useEffect(() => {
-    if (pathname === "/super-admin") return;
-    if (!loading && (!token || user?.role !== "SUPER_ADMIN")) {
+    if (loading || isPublicPath) return;
+    if (!token || user?.role !== "SUPER_ADMIN") {
       router.replace("/super-admin");
     }
-  }, [loading, pathname, router, token, user?.role]);
+  }, [isPublicPath, loading, pathname, router, token, user?.role]);
 
-  const showNav = user?.role === "SUPER_ADMIN" && token && pathname !== "/super-admin";
+  const showNav = user?.role === "SUPER_ADMIN" && token && !isPublicPath;
 
   if (!showNav) {
     return <>{children}</>;
