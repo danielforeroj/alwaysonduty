@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const resolveApiBase = () => API_BASE || (typeof window !== "undefined" ? window.location.origin : "");
+
 function ResetPasswordForm() {
   const params = useSearchParams();
   const token = params.get("token") || "";
@@ -27,7 +29,8 @@ function ResetPasswordForm() {
       setError("Passwords do not match.");
       return;
     }
-    if (!API_BASE) {
+    const base = resolveApiBase();
+    if (!base) {
       setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
       return;
     }
@@ -37,7 +40,7 @@ function ResetPasswordForm() {
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
+      const res = await fetch(`${base}/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, new_password: password }),

@@ -6,14 +6,14 @@ import { useAuth } from "@/components/providers/AuthProvider";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const resolveApiBase = () => API_BASE || (typeof window !== "undefined" ? window.location.origin : "");
+
 export default function SuperAdminPage() {
   const { user, setAuth, loading, token } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
-  const [configError, setConfigError] = useState<string | null>(
-    API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
-  );
+  const [configError, setConfigError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function SuperAdminPage() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const base = API_BASE;
+    const base = resolveApiBase();
     if (!base) {
       setConfigError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
       setSubmitting(false);

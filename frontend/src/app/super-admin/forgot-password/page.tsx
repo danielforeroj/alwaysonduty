@@ -4,6 +4,8 @@ import { FormEvent, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const resolveApiBase = () => API_BASE || (typeof window !== "undefined" ? window.location.origin : "");
+
 export default function SuperAdminForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -15,7 +17,8 @@ export default function SuperAdminForgotPasswordPage() {
     setMessage(null);
     setError(null);
 
-    if (!API_BASE) {
+    const base = resolveApiBase();
+    if (!base) {
       setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
       return;
     }
@@ -25,7 +28,7 @@ export default function SuperAdminForgotPasswordPage() {
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const res = await fetch(`${API_BASE}/api/super-admin/request-password-reset`, {
+      const res = await fetch(`${base}/api/super-admin/request-password-reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
