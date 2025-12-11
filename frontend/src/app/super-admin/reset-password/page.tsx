@@ -1,11 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export default function SuperAdminResetPasswordPage() {
+function ResetPasswordForm() {
   const params = useSearchParams();
   const token = params.get("token") || "";
   const [password, setPassword] = useState("");
@@ -101,5 +101,13 @@ export default function SuperAdminResetPasswordPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function SuperAdminResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="py-10 text-center text-slate-600 dark:text-slate-300">Loading reset form…</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
