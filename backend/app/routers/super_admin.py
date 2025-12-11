@@ -1,3 +1,4 @@
+import logging
 import secrets
 from typing import Optional
 from uuid import UUID
@@ -33,6 +34,7 @@ from app.utils.dependencies import get_db, require_super_admin
 from app.utils.security import hash_password
 
 router = APIRouter(prefix="/super-admin", tags=["super-admin"])
+logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
@@ -52,6 +54,11 @@ def request_super_admin_password_reset(
     user, token = auth_service.request_password_reset(
         db, normalized_email, allowed_roles={"SUPER_ADMIN"}
     )
+    if not user:
+        logger.warning(
+            "Super admin password reset requested for non-existing or non-super-admin email: %s",
+            normalized_email,
+        )
     if user and token:
         background_tasks.add_task(
             email_service.send_password_reset_email,
