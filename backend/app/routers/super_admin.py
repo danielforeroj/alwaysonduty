@@ -12,6 +12,7 @@ from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.tenant import Tenant
 from app.models.user import User
+from app.schemas.auth import RequestPasswordReset
 from app.schemas.super_admin import (
     AgentDetail,
     AgentListItem,
@@ -39,6 +40,27 @@ def _paginate(query, page: int, page_size: int):
     total = query.count()
     items = query.offset((page - 1) * page_size).limit(page_size).all()
     return items, total
+
+
+@router.post("/request-password-reset")
+def request_super_admin_password_reset(
+    payload: RequestPasswordReset,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    normalized_email = payload.email.strip().lower()
+    user, token = auth_service.request_password_reset(
+        db, normalized_email, allowed_roles={"SUPER_ADMIN"}
+    )
+    if user and token:
+        background_tasks.add_task(
+            email_service.send_password_reset_email,
+            user,
+            token,
+            settings.frontend_base_url,
+            "super-admin/reset-password",
+        )
+    return {"detail": "If that super admin email exists, a reset link has been sent."}
 
 
 @router.get("/overview", response_model=OverviewMetrics)

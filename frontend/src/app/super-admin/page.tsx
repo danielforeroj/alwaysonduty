@@ -94,7 +94,7 @@ export default function SuperAdminPage() {
           />
         </div>
         <div className="text-right text-sm">
-          <a href="/forgot-password" className="text-slate-700 underline dark:text-slate-200">
+          <a href="/super-admin/forgot-password" className="text-slate-700 underline dark:text-slate-200">
             Forgot password?
           </a>
         </div>

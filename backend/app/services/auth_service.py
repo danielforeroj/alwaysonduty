@@ -122,9 +122,12 @@ def verify_email(db: Session, token_str: str) -> bool:
     return True
 
 
-def request_password_reset(db: Session, email: str):
+def request_password_reset(db: Session, email: str, allowed_roles: set[str] | None = None):
     user = db.query(User).filter(User.email == email).first()
     if not user:
+        return None, None
+
+    if allowed_roles is not None and user.role not in allowed_roles:
         return None, None
 
     reset_token = PasswordResetToken(
