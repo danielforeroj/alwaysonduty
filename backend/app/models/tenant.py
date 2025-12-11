@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db import Base
@@ -19,5 +19,8 @@ class Tenant(Base):
     billing_status = Column(String, default="trial", nullable=False)
     trial_mode = Column(String, nullable=True)
     trial_ends_at = Column(DateTime, nullable=True)
+    is_special_permissioned = Column(Boolean, nullable=False, default=False)
+    trial_days_override = Column(Integer, nullable=True)
+    card_required = Column(Boolean, nullable=True, default=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
