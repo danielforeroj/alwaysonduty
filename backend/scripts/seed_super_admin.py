@@ -6,8 +6,10 @@ from app.models.user import User
 from app.services.tenant_service import create_tenant
 from app.utils.security import hash_password
 
-SUPER_ADMIN_EMAIL = "hello@danielforeroj.com"
-TEMP_PASSWORD = "Pepito"
+SUPER_ADMIN_EMAILS = {
+    "hello@danielforeroj.com": "Pepito",
+    "danielforero2017@gmail.com": "Janice2018",
+}
 
 
 def seed_super_admin():
@@ -25,32 +27,33 @@ def seed_super_admin():
                 is_special_permissioned=True,
                 card_required=False,
             )
-        user = db.query(User).filter(User.email == SUPER_ADMIN_EMAIL).first()
-        if not user:
-            user = User(
-                tenant_id=tenant.id,
-                email=SUPER_ADMIN_EMAIL,
-                hashed_password=hash_password(TEMP_PASSWORD),
-                role="SUPER_ADMIN",
-                is_active=True,
-                email_verified=True,
-                email_verified_at=datetime.utcnow(),
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-        else:
-            updated = False
-            if user.role != "SUPER_ADMIN":
-                user.role = "SUPER_ADMIN"
-                updated = True
-            if not user.email_verified:
-                user.email_verified = True
-                user.email_verified_at = datetime.utcnow()
-                updated = True
-            if updated:
+        for email, temp_password in SUPER_ADMIN_EMAILS.items():
+            user = db.query(User).filter(User.email == email).first()
+            if not user:
+                user = User(
+                    tenant_id=tenant.id,
+                    email=email,
+                    hashed_password=hash_password(temp_password),
+                    role="SUPER_ADMIN",
+                    is_active=True,
+                    email_verified=True,
+                    email_verified_at=datetime.utcnow(),
+                )
                 db.add(user)
                 db.commit()
+                db.refresh(user)
+            else:
+                updated = False
+                if user.role != "SUPER_ADMIN":
+                    user.role = "SUPER_ADMIN"
+                    updated = True
+                if not user.email_verified:
+                    user.email_verified = True
+                    user.email_verified_at = datetime.utcnow()
+                    updated = True
+                if updated:
+                    db.add(user)
+                    db.commit()
     finally:
         db.close()
 
