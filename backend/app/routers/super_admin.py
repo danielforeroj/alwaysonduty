@@ -33,7 +33,7 @@ from app.services import auth_service, email_service
 from app.utils.dependencies import get_db, require_super_admin
 from app.utils.security import hash_password
 
-router = APIRouter(prefix="/super-admin", tags=["super-admin"])
+router = APIRouter(prefix="", tags=["super-admin"])
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
@@ -72,22 +72,33 @@ def request_super_admin_password_reset(
 
 @router.get("/overview", response_model=OverviewMetrics)
 def get_overview(db: Session = Depends(get_db), _: User = Depends(require_super_admin)):
-    total_tenants = db.query(func.count(Tenant.id)).scalar() or 0
-    total_users = db.query(func.count(User.id)).scalar() or 0
-    total_agents = db.query(func.count(Agent.id)).scalar() or 0
-    total_conversations = db.query(func.count(Conversation.id)).scalar() or 0
+    try:
+        total_tenants = db.query(func.count(Tenant.id)).scalar() or 0
+        total_users = db.query(func.count(User.id)).scalar() or 0
+        total_agents = db.query(func.count(Agent.id)).scalar() or 0
+        total_conversations = db.query(func.count(Conversation.id)).scalar() or 0
 
-    recent_tenants = [t.name for t in db.query(Tenant).order_by(Tenant.created_at.desc()).limit(5)]
-    recent_users = [u.email for u in db.query(User).order_by(User.created_at.desc()).limit(5)]
+        recent_tenants = [
+            t.name for t in db.query(Tenant).order_by(Tenant.created_at.desc()).limit(5)
+        ]
+        recent_users = [
+            u.email for u in db.query(User).order_by(User.created_at.desc()).limit(5)
+        ]
 
-    return OverviewMetrics(
-        total_tenants=total_tenants,
-        total_users=total_users,
-        total_agents=total_agents,
-        total_conversations=total_conversations,
-        recent_tenants=recent_tenants,
-        recent_users=recent_users,
-    )
+        return OverviewMetrics(
+            total_tenants=total_tenants,
+            total_users=total_users,
+            total_agents=total_agents,
+            total_conversations=total_conversations,
+            recent_tenants=recent_tenants,
+            recent_users=recent_users,
+        )
+    except Exception:
+        logger.exception("Failed to compute super admin overview metrics")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load overview metrics",
+        )
 
 
 @router.get("/tenants", response_model=TenantListResponse)

@@ -34,7 +34,20 @@ export default function SuperAdminOverview() {
         const res = await fetch(`${API_BASE}/api/super-admin/overview`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed to load overview");
+        if (!res.ok) {
+          let detail = "Failed to load overview";
+          try {
+            const data = await res.json();
+            if (data?.detail) {
+              detail = `${data.detail} (status ${res.status})`;
+            } else {
+              detail = `Failed to load overview (status ${res.status})`;
+            }
+          } catch {
+            detail = `Failed to load overview (status ${res.status})`;
+          }
+          throw new Error(detail);
+        }
         setMetrics(await res.json());
       } catch (err: any) {
         setError(err.message || "Failed to load overview");
