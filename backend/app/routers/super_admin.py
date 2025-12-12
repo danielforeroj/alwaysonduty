@@ -144,9 +144,22 @@ def list_tenants(
         .all()
     }
 
+    primary_contacts: dict[UUID, tuple[Optional[str], Optional[str]]] = {}
+    if tenant_ids:
+        for u in (
+            db.query(User)
+            .filter(User.tenant_id.in_(tenant_ids))
+            .order_by(User.tenant_id, User.created_at.asc())
+            .all()
+        ):
+            if u.tenant_id not in primary_contacts:
+                primary_contacts[u.tenant_id] = (u.name, u.email)
+
     payload_items = [
         TenantListItem(
             id=t.id,
+            contact_name=primary_contacts.get(t.id, (None, None))[0],
+            contact_email=primary_contacts.get(t.id, (None, None))[1],
             name=t.name,
             slug=t.slug,
             plan_type=t.plan_type,
@@ -170,9 +183,15 @@ def list_tenants(
 @router.post("/tenants", response_model=TenantDetail, status_code=status.HTTP_201_CREATED)
 def create_tenant_super_admin(
     payload: CreateTenantRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     _: User = Depends(require_super_admin),
 ):
+    normalized_email = payload.contact_email.strip().lower()
+    existing = db.query(User).filter(User.email == normalized_email).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
+
     tenant = create_tenant_service(
         db=db,
         name=payload.name,
@@ -183,6 +202,27 @@ def create_tenant_super_admin(
         is_special_permissioned=payload.is_special_permissioned,
         trial_days_override=payload.trial_days_override,
         card_required=payload.card_required,
+    )
+
+    user = User(
+        tenant_id=tenant.id,
+        email=normalized_email,
+        name=payload.contact_name,
+        hashed_password=hash_password(payload.contact_password),
+        role="TENANT_ADMIN",
+        is_active=True,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    verification_token = auth_service._create_email_verification_token(db, user)  # type: ignore[attr-defined]
+    background_tasks.add_task(email_service.send_account_creation_email, user, tenant)
+    background_tasks.add_task(
+        email_service.send_email_verification_email,
+        user,
+        verification_token.token,
+        settings.frontend_base_url,
     )
 
     agent_count = db.query(func.count(Agent.id)).filter(Agent.tenant_id == tenant.id).scalar() or 0
@@ -207,6 +247,8 @@ def create_tenant_super_admin(
     detail.total_conversations = total_conversations
     detail.total_messages = total_messages
     detail.primary_contact_email = primary_user.email if primary_user else None
+    detail.contact_name = primary_user.name if primary_user else None
+    detail.contact_email = primary_user.email if primary_user else None
     return detail
 
 
@@ -243,6 +285,8 @@ def tenant_detail(
     detail.total_conversations = total_conversations
     detail.total_messages = total_messages
     detail.primary_contact_email = primary_user.email if primary_user else None
+    detail.contact_name = primary_user.name if primary_user else None
+    detail.contact_email = primary_user.email if primary_user else None
     return detail
 
 

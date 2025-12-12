@@ -22,6 +22,8 @@ class OverviewMetrics(BaseModel):
 
 class TenantListItem(BaseModel):
     id: UUID
+    contact_name: Optional[str] = None
+    contact_email: Optional[EmailStr] = None
     name: str
     slug: str
     plan_type: str
@@ -68,6 +70,9 @@ class CreateTenantRequest(BaseModel):
     is_special_permissioned: bool = True
     card_required: Optional[bool] = False
     billing_status: Optional[str] = "trial"
+    contact_name: Optional[str] = None
+    contact_email: EmailStr
+    contact_password: str = Field(..., min_length=6)
 
 
 class UserListItem(BaseModel):

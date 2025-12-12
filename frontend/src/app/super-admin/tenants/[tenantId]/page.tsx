@@ -8,6 +8,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type TenantDetail = {
   id: string;
+  contact_name?: string | null;
+  contact_email?: string | null;
   name: string;
   slug: string;
   plan_type: string;
@@ -83,6 +85,9 @@ export default function TenantDetailPage() {
       <div>
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">{tenant.name}</h1>
         <p className="text-sm text-slate-600 dark:text-slate-300">Slug: {tenant.slug}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          Contact: {tenant.contact_name || "—"} {tenant.contact_email ? `(${tenant.contact_email})` : ""}
+        </p>
       </div>
 
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-800">{error}</div>}

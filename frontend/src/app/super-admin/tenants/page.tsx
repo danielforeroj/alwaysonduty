@@ -7,6 +7,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type Tenant = {
   id: string;
+  contact_name?: string | null;
+  contact_email?: string | null;
   name: string;
   slug: string;
   plan_type: string;
@@ -36,6 +38,9 @@ export default function TenantsPage() {
   const [newTrialDays, setNewTrialDays] = useState<number | "">("");
   const [newSpecial, setNewSpecial] = useState(true);
   const [newCardRequired, setNewCardRequired] = useState(false);
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPassword, setContactPassword] = useState("");
 
   const loadTenants = useCallback(async () => {
     if (!API_BASE || !token) return;
@@ -62,7 +67,11 @@ export default function TenantsPage() {
   }, [loadTenants]);
 
   const createTenant = async () => {
-    if (!API_BASE || !token || !newName) return;
+    if (!API_BASE || !token || !newName || !contactEmail || !contactPassword) {
+      setError("Name, contact email, and a temporary password are required");
+      return;
+    }
+    setError(null);
     try {
       const res = await fetch(`${API_BASE}/api/super-admin/tenants`, {
         method: "POST",
@@ -75,6 +84,9 @@ export default function TenantsPage() {
           card_required: newCardRequired,
           trial_mode: "no_card",
           billing_status: "trial",
+          contact_name: contactName || null,
+          contact_email: contactEmail,
+          contact_password: contactPassword,
         }),
       });
       if (!res.ok) throw new Error("Unable to create tenant");
@@ -82,6 +94,9 @@ export default function TenantsPage() {
       setNewTrialDays("");
       setNewSpecial(true);
       setNewCardRequired(false);
+      setContactName("");
+      setContactEmail("");
+      setContactPassword("");
       await loadTenants();
     } catch (err: any) {
       setError(err.message || "Unable to create tenant");
@@ -115,6 +130,26 @@ export default function TenantsPage() {
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Name"
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          />
+          <input
+            value={contactName}
+            onChange={(e) => setContactName(e.target.value)}
+            placeholder="Contact name"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          />
+          <input
+            value={contactEmail}
+            onChange={(e) => setContactEmail(e.target.value)}
+            placeholder="Contact email"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            type="email"
+          />
+          <input
+            value={contactPassword}
+            onChange={(e) => setContactPassword(e.target.value)}
+            placeholder="Temporary password"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            type="password"
           />
           <select
             value={newPlan}
@@ -161,7 +196,9 @@ export default function TenantsPage() {
         <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
           <thead className="bg-slate-50 dark:bg-slate-800/50">
             <tr>
-              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Name</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Contact</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Email</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Business</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Slug</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Plan</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Status</th>
@@ -178,7 +215,9 @@ export default function TenantsPage() {
                 onClick={() => router.push(`/super-admin/tenants/${tenant.id}`)}
                 className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60"
               >
-                <td className="px-4 py-3 font-medium text-blue-600 dark:text-blue-300">{tenant.name}</td>
+                <td className="px-4 py-3 font-medium text-blue-600 dark:text-blue-300">{tenant.contact_name || "—"}</td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.contact_email || "—"}</td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.name}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.slug}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.plan_type}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.billing_status}</td>
@@ -192,7 +231,7 @@ export default function TenantsPage() {
             ))}
             {(!data || data.items.length === 0) && (
               <tr>
-                <td colSpan={8} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={10} className="px-4 py-6 text-center text-slate-500">
                   No tenants found.
                 </td>
               </tr>

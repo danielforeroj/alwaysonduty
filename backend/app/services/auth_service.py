@@ -60,6 +60,7 @@ def signup(db: Session, payload: SignupRequest):
     user = User(
         tenant_id=tenant.id,
         email=normalized_email,
+        name=payload.name,
         hashed_password=hash_password(payload.password),
         role="TENANT_ADMIN",
     )

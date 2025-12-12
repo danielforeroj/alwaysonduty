@@ -68,10 +68,14 @@ export default function SuperAdminOverview() {
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">{error}</div>}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Tenants" value={metrics?.total_tenants ?? 0} />
-        <StatCard label="Users" value={metrics?.total_users ?? 0} />
-        <StatCard label="Agents" value={metrics?.total_agents ?? 0} />
-        <StatCard label="Conversations" value={metrics?.total_conversations ?? 0} />
+        <StatCard label="Tenants" value={metrics?.total_tenants ?? 0} onClick={() => router.push("/super-admin/tenants")} />
+        <StatCard label="Users" value={metrics?.total_users ?? 0} onClick={() => router.push("/super-admin/users")} />
+        <StatCard label="Agents" value={metrics?.total_agents ?? 0} onClick={() => router.push("/super-admin/agents")} />
+        <StatCard
+          label="Conversations"
+          value={metrics?.total_conversations ?? 0}
+          onClick={() => router.push("/super-admin/conversations")}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -82,12 +86,16 @@ export default function SuperAdminOverview() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
+function StatCard({ label, value, onClick }: { label: string; value: number; onClick?: () => void }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-px hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-900"
+    >
       <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
       <p className="text-2xl font-semibold text-slate-900 dark:text-slate-50">{value}</p>
-    </div>
+    </button>
   );
 }
 
