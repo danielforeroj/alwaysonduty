@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { buildApiUrl } from "../utils/api";
 
 type AgentRow = {
   id: string;
@@ -31,9 +30,13 @@ export default function AgentsPage() {
   }, [loading, router, token, user?.role]);
 
   const loadAgents = async () => {
-    if (!API_BASE || !token) return;
+    const endpoint = buildApiUrl("/api/super-admin/agents");
+    if (!endpoint || !token) {
+      setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/api/super-admin/agents`, {
+      const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to load agents");

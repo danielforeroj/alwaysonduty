@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { buildApiUrl } from "../../utils/api";
 
 type UserDetail = {
   id: string;
@@ -28,9 +27,14 @@ export default function UserDetailPage() {
 
   useEffect(() => {
     const load = async () => {
-      if (!API_BASE || !token || !userId) return;
+      if (!token || !userId) return;
       try {
-        const res = await fetch(`${API_BASE}/api/super-admin/users/${userId}`, {
+        const endpoint = buildApiUrl(`/api/super-admin/users/${userId}`);
+        if (!endpoint) {
+          setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+          return;
+        }
+        const res = await fetch(endpoint, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Failed to load user");
@@ -43,10 +47,14 @@ export default function UserDetailPage() {
   }, [token, userId]);
 
   const updateUser = async (payload: Partial<UserDetail>) => {
-    if (!API_BASE || !token || !userId) return;
+    const endpoint = buildApiUrl(`/api/super-admin/users/${userId}`);
+    if (!endpoint || !token) {
+      setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/api/super-admin/users/${userId}`, {
+      const res = await fetch(endpoint, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),

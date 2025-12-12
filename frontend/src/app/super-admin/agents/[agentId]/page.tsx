@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { buildApiUrl } from "../../utils/api";
 
 type AgentDetail = {
   id: string;
@@ -29,9 +28,14 @@ export default function AgentDetailPage() {
 
   useEffect(() => {
     const load = async () => {
-      if (!API_BASE || !token || !agentId) return;
+      if (!token || !agentId) return;
       try {
-        const res = await fetch(`${API_BASE}/api/super-admin/agents/${agentId}`, {
+        const endpoint = buildApiUrl(`/api/super-admin/agents/${agentId}`);
+        if (!endpoint) {
+          setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+          return;
+        }
+        const res = await fetch(endpoint, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Failed to load agent");
@@ -44,10 +48,14 @@ export default function AgentDetailPage() {
   }, [token, agentId]);
 
   const updateAgent = async (payload: Partial<AgentDetail>) => {
-    if (!API_BASE || !token || !agentId) return;
+    const endpoint = buildApiUrl(`/api/super-admin/agents/${agentId}`);
+    if (!endpoint || !token) {
+      setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/api/super-admin/agents/${agentId}`, {
+      const res = await fetch(endpoint, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),

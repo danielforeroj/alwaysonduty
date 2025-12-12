@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { buildApiUrl } from "../utils/api";
 
 type OverviewMetrics = {
   total_tenants: number;
@@ -29,9 +28,14 @@ export default function SuperAdminOverview() {
 
   useEffect(() => {
     const fetchMetrics = async () => {
-      if (!API_BASE || !token) return;
+      if (!token) return;
       try {
-        const res = await fetch(`${API_BASE}/api/super-admin/overview`, {
+        const endpoint = buildApiUrl(`/api/super-admin/overview`);
+        if (!endpoint) {
+          setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+          return;
+        }
+        const res = await fetch(endpoint, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {

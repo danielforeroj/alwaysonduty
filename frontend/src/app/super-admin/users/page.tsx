@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { buildApiUrl } from "../utils/api";
 
 type UserRow = {
   id: string;
@@ -33,9 +32,13 @@ export default function UsersPage() {
   }, [loading, router, token, user?.role]);
 
   const loadUsers = async () => {
-    if (!API_BASE || !token) return;
+    const endpoint = buildApiUrl("/api/super-admin/users");
+    if (!endpoint || !token) {
+      setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/api/super-admin/users`, {
+      const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to load users");
@@ -51,9 +54,13 @@ export default function UsersPage() {
   }, [token]);
 
   const createUser = async () => {
-    if (!API_BASE || !token) return;
+    const endpoint = buildApiUrl("/api/super-admin/users");
+    if (!endpoint || !token) {
+      setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/api/super-admin/users`, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ email: form.email, role: form.role, tenant_id: form.tenantId }),
@@ -67,9 +74,13 @@ export default function UsersPage() {
   };
 
   const toggleActive = async (id: string, is_active: boolean) => {
-    if (!API_BASE || !token) return;
+    const endpoint = buildApiUrl(`/api/super-admin/users/${id}`);
+    if (!endpoint || !token) {
+      setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/api/super-admin/users/${id}`, {
+      const res = await fetch(endpoint, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ is_active: !is_active }),
