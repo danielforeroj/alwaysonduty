@@ -77,7 +77,12 @@ def send_message(payload: WebChatRequest, db: Session = Depends(get_db)):
     db.commit()
 
     conversation = conversation_service.create_conversation(
-        db, tenant_id=tenant.id, customer_id=customer.id, channel=payload.channel, agent_type=agent_type
+        db,
+        tenant_id=tenant.id,
+        customer_id=customer.id,
+        channel=payload.channel,
+        agent_type=agent_type,
+        agent_id=agent.id if agent else None,
     )
 
     user_message = conversation_service.add_message(db, conversation_id=conversation.id, sender="user", text=payload.text)

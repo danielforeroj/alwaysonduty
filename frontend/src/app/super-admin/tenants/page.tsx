@@ -6,8 +6,8 @@ import { buildApiUrl } from "../utils/api";
 
 type Tenant = {
   id: string;
-  contact_name?: string | null;
-  contact_email?: string | null;
+  owner_name?: string | null;
+  owner_email?: string | null;
   name: string;
   slug: string;
   plan_type: string;
@@ -147,13 +147,13 @@ export default function TenantsPage() {
           <input
             value={contactName}
             onChange={(e) => setContactName(e.target.value)}
-            placeholder="Contact name"
+            placeholder="Owner name"
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
           />
           <input
             value={contactEmail}
             onChange={(e) => setContactEmail(e.target.value)}
-            placeholder="Contact email"
+            placeholder="Owner email"
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
             type="email"
           />
@@ -209,7 +209,7 @@ export default function TenantsPage() {
         <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
           <thead className="bg-slate-50 dark:bg-slate-800/50">
             <tr>
-              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Contact</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Owner</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Email</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Business</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Slug</th>
@@ -228,8 +228,8 @@ export default function TenantsPage() {
                 onClick={() => router.push(`/super-admin/tenants/${tenant.id}`)}
                 className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60"
               >
-                <td className="px-4 py-3 font-medium text-blue-600 dark:text-blue-300">{tenant.contact_name || "—"}</td>
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.contact_email || "—"}</td>
+                <td className="px-4 py-3 font-medium text-blue-600 dark:text-blue-300">{tenant.owner_name || "—"}</td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.owner_email || "—"}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.name}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.slug}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.plan_type}</td>
