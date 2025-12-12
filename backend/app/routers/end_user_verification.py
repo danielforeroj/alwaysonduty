@@ -1,9 +1,11 @@
+import logging
 from datetime import timedelta
 from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
+from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.orm import Session
 
 from app.models.agent import Agent
@@ -17,6 +19,7 @@ from app.config import get_settings
 
 router = APIRouter()
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 class InitiateVerificationRequest(BaseModel):
@@ -66,23 +69,36 @@ def _resolve_tenant(db: Session, tenant_slug: Optional[str], agent_slug: Optiona
 
 @router.post("/initiate", response_model=InitiateVerificationResponse)
 def initiate_verification(payload: InitiateVerificationRequest, db: Session = Depends(get_db)):
-    tenant = _resolve_tenant(db, payload.tenant_slug, payload.agent_slug)
+    try:
+        tenant = _resolve_tenant(db, payload.tenant_slug, payload.agent_slug)
 
-    verification, _, customer = verification_service.create_verification(
-        db,
-        tenant_id=tenant.id,
-        email=payload.email,
-        first_name=payload.first_name,
-        last_name=payload.last_name,
-        phone=payload.phone,
-        source=payload.source,
-    )
+        verification, _, customer = verification_service.create_verification(
+            db,
+            tenant_id=tenant.id,
+            email=payload.email,
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+            phone=payload.phone,
+            source=payload.source,
+        )
 
-    token = create_access_token(
-        {"verification_id": str(verification.id)}, expires_delta=timedelta(minutes=20)
-    )
+        token = create_access_token(
+            {"verification_id": str(verification.id)}, expires_delta=timedelta(minutes=20)
+        )
 
-    return {"verification_token": token, "customer_id": customer.id}
+        return {"verification_token": token, "customer_id": customer.id}
+    except (ProgrammingError, OperationalError):
+        logger.exception("DB schema error while initiating end-user verification")
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "End-user verification schema not ready. Run `alembic upgrade head` "
+                "(migration 0011_end_user_gating)."
+            ),
+        )
+    except Exception:
+        logger.exception("Failed to initiate end-user verification")
+        raise HTTPException(status_code=500, detail="Failed to initiate verification")
 
 
 @router.post("/confirm", response_model=ConfirmVerificationResponse)

@@ -1,5 +1,9 @@
 import logging
+import os
+from pathlib import Path
 
+from alembic import command
+from alembic.config import Config as AlembicConfig
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -38,6 +42,14 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
+    try:
+        if os.getenv("AUTO_MIGRATE") == "1":
+            alembic_ini = Path(__file__).resolve().parents[1] / "alembic.ini"
+            cfg = AlembicConfig(str(alembic_ini))
+            command.upgrade(cfg, "head")
+    except Exception:
+        logging.getLogger(__name__).exception("Auto-migration failed")
+
     try:
         ensure_super_admins()
     except Exception:

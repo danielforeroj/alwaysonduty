@@ -85,14 +85,26 @@ export default function EndUserGate({
         }),
       });
       if (!res.ok) {
-        throw new Error("Unable to start verification");
+        let detail = `Unable to start verification (status ${res.status})`;
+        try {
+          const data = await res.json();
+          if (data?.detail) detail = `${data.detail} (status ${res.status})`;
+        } catch {
+          try {
+            const txt = await res.text();
+            if (txt) detail = `${txt} (status ${res.status})`;
+          } catch {
+            // ignore
+          }
+        }
+        throw new Error(detail);
       }
       const data = await res.json();
       setVerificationToken(data.verification_token);
       setStep("code");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("We could not start verification. Please try again.");
+      setError(err?.message || "We could not start verification. Please try again.");
     } finally {
       setLoading(false);
     }
