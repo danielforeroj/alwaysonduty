@@ -7,8 +7,8 @@ import { buildApiUrl } from "../../utils/api";
 
 type TenantDetail = {
   id: string;
-  contact_name?: string | null;
-  contact_email?: string | null;
+  owner_name?: string | null;
+  owner_email?: string | null;
   name: string;
   slug: string;
   plan_type: string;
@@ -94,7 +94,7 @@ export default function TenantDetailPage() {
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">{tenant.name}</h1>
         <p className="text-sm text-slate-600 dark:text-slate-300">Slug: {tenant.slug}</p>
         <p className="text-sm text-slate-600 dark:text-slate-300">
-          Contact: {tenant.contact_name || "—"} {tenant.contact_email ? `(${tenant.contact_email})` : ""}
+          Owner: {tenant.owner_name || "—"} {tenant.owner_email ? `(${tenant.owner_email})` : ""}
         </p>
       </div>
 

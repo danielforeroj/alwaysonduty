@@ -22,8 +22,8 @@ class OverviewMetrics(BaseModel):
 
 class TenantListItem(BaseModel):
     id: UUID
-    contact_name: Optional[str] = None
-    contact_email: Optional[str] = None
+    owner_name: Optional[str] = None
+    owner_email: Optional[str] = None
     name: str
     slug: str
     plan_type: str
@@ -133,3 +133,68 @@ class AgentDetail(AgentListItem):
 
 class UpdateAgentRequest(BaseModel):
     status: Optional[str] = None
+
+
+class ChatUserListItem(BaseModel):
+    id: UUID
+    tenant_id: UUID
+    tenant_name: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    source: Optional[str] = None
+    created_at: datetime
+    last_seen_at: Optional[datetime] = None
+    total_conversations: int = 0
+    total_messages: int = 0
+
+    class Config:
+        orm_mode = True
+
+
+class ChatUserListResponse(BaseModel):
+    items: List[ChatUserListItem]
+    pagination: Pagination
+
+
+class ChatUserConversation(BaseModel):
+    id: UUID
+    agent_name: Optional[str] = None
+    agent_type: Optional[str] = None
+    created_at: datetime
+    message_count: int = 0
+    last_message_at: Optional[datetime] = None
+
+
+class ChatUserDetail(ChatUserListItem):
+    conversations: List[ChatUserConversation] = Field(default_factory=list)
+
+
+class UnifiedUserListItem(BaseModel):
+    id: UUID
+    user_type: str  # "platform" or "chat"
+    tenant_id: Optional[UUID] = None
+    tenant_name: Optional[str] = None
+
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+    email_verified: Optional[bool] = None
+    last_login: Optional[datetime] = None
+
+    source: Optional[str] = None
+    last_seen_at: Optional[datetime] = None
+
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class UnifiedUserListResponse(BaseModel):
+    items: List[UnifiedUserListItem]
+    pagination: Pagination

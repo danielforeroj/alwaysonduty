@@ -5,10 +5,13 @@ from app.models.conversation import Conversation
 from app.models.message import Message
 
 
-def create_conversation(db: Session, tenant_id, customer_id, channel: str, agent_type: str = "cs") -> Conversation:
+def create_conversation(
+    db: Session, tenant_id, customer_id, channel: str, agent_type: str = "cs", agent_id=None
+) -> Conversation:
     conversation = Conversation(
         tenant_id=tenant_id,
         customer_id=customer_id,
+        agent_id=agent_id,
         channel=channel,
         agent_type=agent_type,
         status="open",

@@ -9,6 +9,7 @@ const navItems = [
   { href: "/super-admin/overview", label: "Overview" },
   { href: "/super-admin/tenants", label: "Tenants" },
   { href: "/super-admin/users", label: "Users" },
+  { href: "/super-admin/chat-users", label: "Chat Users" },
   { href: "/super-admin/agents", label: "Agents" },
 ];
 

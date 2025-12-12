@@ -1,1 +1,11 @@
-from . import auth, billing, conversations, customers, dashboard, health, webchat, agents  # noqa: F401
+from . import (
+    agents,
+    auth,
+    billing,
+    conversations,
+    customers,
+    dashboard,
+    end_user_verification,
+    health,
+    webchat,
+)  # noqa: F401
