@@ -169,3 +169,32 @@ class ChatUserConversation(BaseModel):
 
 class ChatUserDetail(ChatUserListItem):
     conversations: List[ChatUserConversation] = Field(default_factory=list)
+
+
+class UnifiedUserListItem(BaseModel):
+    id: UUID
+    user_type: str  # "platform" or "chat"
+    tenant_id: Optional[UUID] = None
+    tenant_name: Optional[str] = None
+
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+    email_verified: Optional[bool] = None
+    last_login: Optional[datetime] = None
+
+    source: Optional[str] = None
+    last_seen_at: Optional[datetime] = None
+
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class UnifiedUserListResponse(BaseModel):
+    items: List[UnifiedUserListItem]
+    pagination: Pagination

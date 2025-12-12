@@ -4,7 +4,7 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -29,10 +29,11 @@ from app.schemas.super_admin import (
     TenantListItem,
     TenantListResponse,
     TenantUpdateRequest,
+    UnifiedUserListItem,
+    UnifiedUserListResponse,
     UpdateAgentRequest,
     UpdateUserRequest,
     UserListItem,
-    UserListResponse,
 )
 from app.services import auth_service, email_service
 from app.services.tenant_service import create_tenant as create_tenant_service
@@ -259,8 +260,15 @@ def create_tenant_super_admin(
         or 0
     )
     primary_user = (
-        db.query(User).filter(User.tenant_id == tenant.id).order_by(User.created_at.asc()).first()
+        db.query(User)
+        .filter(User.tenant_id == tenant.id, User.role == "TENANT_ADMIN")
+        .order_by(User.created_at.asc())
+        .first()
     )
+    if not primary_user:
+        primary_user = (
+            db.query(User).filter(User.tenant_id == tenant.id).order_by(User.created_at.asc()).first()
+        )
 
     detail = TenantDetail.from_orm(tenant)
     detail.agent_count = agent_count
@@ -351,59 +359,108 @@ def update_tenant(
     return tenant_detail(tenant_id, db)
 
 
-@router.get("/users", response_model=UserListResponse)
+@router.get("/users", response_model=UnifiedUserListResponse)
 def list_users(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    search: Optional[str] = None,
-    role: Optional[str] = None,
     tenant_id: Optional[UUID] = None,
+    user_type: Optional[str] = Query(None, description="platform or chat"),
+    q: Optional[str] = Query(None, description="Search by email, name, or phone"),
     db: Session = Depends(get_db),
     _: User = Depends(require_super_admin),
 ):
     try:
-        query = db.query(User, Tenant.name.label("tenant_name")).join(Tenant, Tenant.id == User.tenant_id)
-        if search:
-            term = f"%{search.lower()}%"
-            query = query.filter(func.lower(User.email).like(term))
-        if role:
-            query = query.filter(User.role == role)
-        if tenant_id:
-            query = query.filter(User.tenant_id == tenant_id)
+        platform_rows = []
+        chat_rows = []
 
-        total = query.count()
-        rows = (
-            query.order_by(User.created_at.desc())
-            .offset((page - 1) * page_size)
-            .limit(page_size)
-            .all()
-        )
-        items = [
-            UserListItem(
-                id=row.User.id,
-                email=row.User.email,
-                role=row.User.role,
-                tenant_id=row.User.tenant_id,
-                tenant_name=row.tenant_name,
-                is_active=row.User.is_active,
-                created_at=row.User.created_at,
-                last_login=row.User.last_login,
-                email_verified=row.User.email_verified,
+        if user_type in (None, "platform"):
+            platform_query = db.query(User, Tenant.name.label("tenant_name")).join(
+                Tenant, Tenant.id == User.tenant_id
             )
-            for row in rows
-        ]
-        return UserListResponse(
-            items=items, pagination={"total": total, "page": page, "page_size": page_size}
+            if tenant_id:
+                platform_query = platform_query.filter(User.tenant_id == tenant_id)
+            if q:
+                term = f"%{q.lower()}%"
+                platform_query = platform_query.filter(
+                    or_(
+                        func.lower(User.email).like(term),
+                        func.lower(func.coalesce(User.name, "")).like(term),
+                    )
+                )
+            platform_rows = platform_query.all()
+
+        if user_type in (None, "chat"):
+            chat_query = db.query(Customer, Tenant.name.label("tenant_name")).join(
+                Tenant, Tenant.id == Customer.tenant_id
+            )
+            if tenant_id:
+                chat_query = chat_query.filter(Customer.tenant_id == tenant_id)
+            if q:
+                term = f"%{q.lower()}%"
+                chat_query = chat_query.filter(
+                    or_(
+                        func.lower(func.coalesce(Customer.email, "")).like(term),
+                        func.lower(func.coalesce(Customer.first_name, "")).like(term),
+                        func.lower(func.coalesce(Customer.last_name, "")).like(term),
+                        func.lower(func.coalesce(Customer.primary_phone, "")).like(term),
+                    )
+                )
+            chat_rows = chat_query.all()
+
+        items: list[UnifiedUserListItem] = []
+
+        for u, tenant_name in platform_rows:
+            items.append(
+                UnifiedUserListItem(
+                    id=u.id,
+                    user_type="platform",
+                    tenant_id=u.tenant_id,
+                    tenant_name=tenant_name,
+                    full_name=u.name,
+                    email=u.email,
+                    role=u.role,
+                    is_active=u.is_active,
+                    email_verified=u.email_verified,
+                    last_login=u.last_login,
+                    created_at=u.created_at,
+                )
+            )
+
+        for c, tenant_name in chat_rows:
+            full_name = " ".join([c.first_name or "", c.last_name or ""]).strip() or None
+            items.append(
+                UnifiedUserListItem(
+                    id=c.id,
+                    user_type="chat",
+                    tenant_id=c.tenant_id,
+                    tenant_name=tenant_name,
+                    full_name=full_name or c.full_name,
+                    email=c.email,
+                    phone=c.primary_phone,
+                    source=c.source,
+                    last_seen_at=c.last_seen_at,
+                    created_at=c.created_at,
+                )
+            )
+
+        items.sort(key=lambda x: x.created_at, reverse=True)
+        total = len(items)
+        start = (page - 1) * page_size
+        end = start + page_size
+        paged = items[start:end]
+
+        return UnifiedUserListResponse(
+            items=paged, pagination={"total": total, "page": page, "page_size": page_size}
         )
     except Exception:
-        logger.exception("Failed to list users")
+        logger.exception("Failed to list unified users")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to list users"
         )
 
 
-@router.get("/users/{user_id}", response_model=UserListItem)
-def get_user(
+@router.get("/users/platform/{user_id}", response_model=UserListItem)
+def get_platform_user(
     user_id: UUID,
     db: Session = Depends(get_db),
     _: User = Depends(require_super_admin),
@@ -472,7 +529,7 @@ def create_user(
     )
 
 
-@router.patch("/users/{user_id}", response_model=UserListItem)
+@router.patch("/users/platform/{user_id}", response_model=UserListItem)
 def update_user(
     user_id: UUID,
     payload: UpdateUserRequest,
@@ -512,6 +569,86 @@ def update_user(
         last_login=user.last_login,
         email_verified=user.email_verified,
     )
+
+
+def _load_chat_user_detail(db: Session, chat_user_id: UUID) -> ChatUserDetail:
+    row = (
+        db.query(Customer, Tenant.name.label("tenant_name"))
+        .join(Tenant, Tenant.id == Customer.tenant_id)
+        .filter(Customer.id == chat_user_id)
+        .first()
+    )
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat user not found")
+
+    conversations = (
+        db.query(
+            Conversation.id,
+            Conversation.started_at,
+            Conversation.agent_type,
+            Conversation.agent_id,
+            Agent.name.label("agent_name"),
+            func.count(Message.id).label("message_count"),
+            func.max(Message.created_at).label("last_message_at"),
+        )
+        .outerjoin(Agent, Agent.id == Conversation.agent_id)
+        .outerjoin(Message, Message.conversation_id == Conversation.id)
+        .filter(Conversation.customer_id == chat_user_id)
+        .group_by(
+            Conversation.id,
+            Conversation.started_at,
+            Conversation.agent_type,
+            Conversation.agent_id,
+            Agent.name,
+        )
+        .order_by(Conversation.started_at.desc())
+        .all()
+    )
+
+    message_total = sum(conv.message_count or 0 for conv in conversations)
+
+    return ChatUserDetail(
+        id=row.Customer.id,
+        tenant_id=row.Customer.tenant_id,
+        tenant_name=row.tenant_name,
+        first_name=row.Customer.first_name,
+        last_name=row.Customer.last_name,
+        email=row.Customer.email,
+        phone=row.Customer.primary_phone,
+        source=row.Customer.source,
+        created_at=row.Customer.created_at,
+        last_seen_at=row.Customer.last_seen_at,
+        total_conversations=len(conversations),
+        total_messages=message_total,
+        conversations=[
+            {
+                "id": conv.id,
+                "agent_name": conv.agent_name,
+                "agent_type": conv.agent_type,
+                "created_at": conv.started_at,
+                "message_count": conv.message_count or 0,
+                "last_message_at": conv.last_message_at,
+            }
+            for conv in conversations
+        ],
+    )
+
+
+@router.get("/users/chat/{chat_user_id}", response_model=ChatUserDetail)
+def get_chat_user_from_users(
+    chat_user_id: UUID,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_super_admin),
+):
+    try:
+        return _load_chat_user_detail(db, chat_user_id)
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Failed to load chat user")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to load chat user"
+        )
 
 
 @router.get("/chat-users", response_model=ChatUserListResponse)
@@ -599,66 +736,7 @@ def get_chat_user(
     _: User = Depends(require_super_admin),
 ):
     try:
-        row = (
-            db.query(Customer, Tenant.name.label("tenant_name"))
-            .join(Tenant, Tenant.id == Customer.tenant_id)
-            .filter(Customer.id == chat_user_id)
-            .first()
-        )
-        if not row:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat user not found")
-
-        conversations = (
-            db.query(
-                Conversation.id,
-                Conversation.started_at,
-                Conversation.agent_type,
-                Conversation.agent_id,
-                Agent.name.label("agent_name"),
-                func.count(Message.id).label("message_count"),
-                func.max(Message.created_at).label("last_message_at"),
-            )
-            .outerjoin(Agent, Agent.id == Conversation.agent_id)
-            .outerjoin(Message, Message.conversation_id == Conversation.id)
-            .filter(Conversation.customer_id == chat_user_id)
-            .group_by(
-                Conversation.id,
-                Conversation.started_at,
-                Conversation.agent_type,
-                Conversation.agent_id,
-                Agent.name,
-            )
-            .order_by(Conversation.started_at.desc())
-            .all()
-        )
-
-        message_total = sum(conv.message_count or 0 for conv in conversations)
-
-        return ChatUserDetail(
-            id=row.Customer.id,
-            tenant_id=row.Customer.tenant_id,
-            tenant_name=row.tenant_name,
-            first_name=row.Customer.first_name,
-            last_name=row.Customer.last_name,
-            email=row.Customer.email,
-            phone=row.Customer.primary_phone,
-            source=row.Customer.source,
-            created_at=row.Customer.created_at,
-            last_seen_at=row.Customer.last_seen_at,
-            total_conversations=len(conversations),
-            total_messages=message_total,
-            conversations=[
-                {
-                    "id": conv.id,
-                    "agent_name": conv.agent_name,
-                    "agent_type": conv.agent_type,
-                    "created_at": conv.started_at,
-                    "message_count": conv.message_count or 0,
-                    "last_message_at": conv.last_message_at,
-                }
-                for conv in conversations
-            ],
-        )
+        return _load_chat_user_detail(db, chat_user_id)
     except HTTPException:
         raise
     except Exception:

@@ -8,14 +8,19 @@ import { buildApiUrl } from "../utils/api";
 
 type UserRow = {
   id: string;
-  email: string;
-  role: string;
-  tenant_id: string;
-  tenant_name: string;
-  is_active: boolean;
-  email_verified: boolean;
+  user_type: "platform" | "chat";
+  tenant_id?: string | null;
+  tenant_name?: string | null;
+  full_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  role?: string | null;
+  is_active?: boolean | null;
+  email_verified?: boolean | null;
   created_at: string;
   last_login?: string | null;
+  last_seen_at?: string | null;
+  source?: string | null;
 };
 
 export default function UsersPage() {
@@ -83,7 +88,7 @@ export default function UsersPage() {
   };
 
   const toggleActive = async (id: string, is_active: boolean) => {
-    const endpoint = buildApiUrl(`/api/super-admin/users/${id}`);
+    const endpoint = buildApiUrl(`/api/super-admin/users/platform/${id}`);
     if (!endpoint || !token) {
       setError("API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.");
       return;
@@ -152,11 +157,15 @@ export default function UsersPage() {
         <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
           <thead className="bg-slate-50 dark:bg-slate-800/50">
             <tr>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Name</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Email</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Role</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Phone</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Tenant</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Status</th>
-              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Last login</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Type</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Role</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Source</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Created</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Last activity</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -164,31 +173,76 @@ export default function UsersPage() {
             {users.map((row) => (
               <tr
                 key={row.id}
-                onClick={() => router.push(`/super-admin/users/${row.id}`)}
+                onClick={() =>
+                  router.push(
+                    row.user_type === "platform"
+                      ? `/super-admin/users/platform/${row.id}`
+                      : `/super-admin/users/chat/${row.id}`
+                  )
+                }
                 className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60"
               >
-                <td className="px-4 py-3 text-blue-600 dark:text-blue-300">
-                  <Link href={`/super-admin/users/${row.id}`}>{row.email}</Link>
-                </td>
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.role}</td>
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.tenant_name}</td>
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.is_active ? "Active" : "Inactive"}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">
-                  {row.last_login ? new Date(row.last_login).toLocaleString() : "—"}
+                  {row.full_name || "—"}
+                </td>
+                <td className="px-4 py-3 text-blue-600 dark:text-blue-300">
+                  <Link
+                    href={
+                      row.user_type === "platform"
+                        ? `/super-admin/users/platform/${row.id}`
+                        : `/super-admin/users/chat/${row.id}`
+                    }
+                  >
+                    {row.email || "—"}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.phone || "—"}</td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.tenant_name || "—"}</td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                      row.user_type === "platform"
+                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
+                        : "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
+                    }`}
+                  >
+                    {row.user_type === "platform" ? "Platform" : "Chat"}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.role || "—"}</td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.source || "—"}</td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">
+                  {new Date(row.created_at).toLocaleString()}
+                </td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">
+                  {row.user_type === "platform"
+                    ? row.last_login
+                      ? new Date(row.last_login).toLocaleString()
+                      : "—"
+                    : row.last_seen_at
+                    ? new Date(row.last_seen_at).toLocaleString()
+                    : "—"}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => toggleActive(row.id, row.is_active)}
-                    className="text-sm text-blue-600 underline dark:text-blue-400"
-                  >
-                    {row.is_active ? "Deactivate" : "Activate"}
-                  </button>
+                  {row.user_type === "platform" ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleActive(row.id, !!row.is_active);
+                      }}
+                      className="text-sm text-blue-600 underline dark:text-blue-400"
+                    >
+                      {row.is_active ? "Deactivate" : "Activate"}
+                    </button>
+                  ) : (
+                    <span className="text-xs text-slate-500">Chat user</span>
+                  )}
                 </td>
               </tr>
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={10} className="px-4 py-6 text-center text-slate-500">
                   No users found.
                 </td>
               </tr>
