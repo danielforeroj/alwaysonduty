@@ -5,7 +5,10 @@ import re
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.models.tenant import Tenant
+
+settings = get_settings()
 
 
 def slugify(name: str) -> str:
@@ -57,3 +60,22 @@ def create_tenant(
 
 def get_tenant_by_slug(db: Session, slug: str) -> Optional[Tenant]:
     return db.query(Tenant).filter(Tenant.slug == slug).first()
+
+
+def ensure_demo_tenant(db: Session) -> Tenant:
+    slug = settings.demo_tenant_slug or "onduty-demo"
+    tenant = get_tenant_by_slug(db, slug)
+    if tenant:
+        return tenant
+
+    name = settings.demo_tenant_name or "OnDuty Demo"
+    return create_tenant(
+        db,
+        name=name,
+        plan_type="demo",
+        slug=slug,
+        billing_status="active",
+        trial_mode="no_trial",
+        is_special_permissioned=True,
+        card_required=False,
+    )
