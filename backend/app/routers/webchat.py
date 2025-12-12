@@ -8,12 +8,14 @@ from sqlalchemy.orm import Session
 from app.models.agent import Agent
 from app.models.customer import Customer
 from app.models.tenant import Tenant
+from app.config import get_settings
 from app.services import ai_service, conversation_service, customer_service
-from app.services.tenant_service import get_tenant_by_slug
+from app.services.tenant_service import ensure_demo_tenant, get_tenant_by_slug
 from app.utils import security
 from app.utils.dependencies import get_db
 
 router = APIRouter()
+settings = get_settings()
 
 
 class WebChatRequest(BaseModel):
@@ -49,6 +51,8 @@ def send_message(payload: WebChatRequest, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="tenant_slug or agent_slug is required")
 
         tenant = get_tenant_by_slug(db, payload.tenant_slug)
+        if not tenant and payload.tenant_slug == settings.demo_tenant_slug:
+            tenant = ensure_demo_tenant(db)
         if not tenant:
             raise HTTPException(status_code=404, detail="Tenant not found")
 

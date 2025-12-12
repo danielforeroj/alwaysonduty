@@ -10,11 +10,13 @@ from app.models.agent import Agent
 from app.models.tenant import Tenant
 from app.schemas.customer import CustomerOut
 from app.services import verification_service
-from app.services.tenant_service import get_tenant_by_slug
+from app.services.tenant_service import ensure_demo_tenant, get_tenant_by_slug
 from app.utils.dependencies import get_db
 from app.utils.security import create_access_token, decode_token
+from app.config import get_settings
 
 router = APIRouter()
+settings = get_settings()
 
 
 class InitiateVerificationRequest(BaseModel):
@@ -55,6 +57,8 @@ def _resolve_tenant(db: Session, tenant_slug: Optional[str], agent_slug: Optiona
         tenant = db.query(Tenant).filter(Tenant.id == agent.tenant_id).first()
     elif tenant_slug:
         tenant = get_tenant_by_slug(db, tenant_slug)
+        if not tenant and tenant_slug == settings.demo_tenant_slug:
+            tenant = ensure_demo_tenant(db)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
     return tenant

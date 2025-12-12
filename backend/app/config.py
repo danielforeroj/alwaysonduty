@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     database_url: str = Field(..., env="DATABASE_URL")
     jwt_secret: str = Field(..., env="BACKEND_JWT_SECRET")
     jwt_algorithm: str = Field(..., env="BACKEND_JWT_ALGORITHM")
+    demo_tenant_slug: str = Field("onduty-demo", env="DEMO_TENANT_SLUG")
+    demo_tenant_name: str = Field("OnDuty Demo", env="DEMO_TENANT_NAME")
     stripe_secret_key: Optional[str] = Field(None, env="STRIPE_SECRET_KEY")
     stripe_webhook_secret: Optional[str] = Field(None, env="STRIPE_WEBHOOK_SECRET")
     stripe_price_starter: Optional[str] = Field(None, env="STRIPE_PRICE_STARTER")

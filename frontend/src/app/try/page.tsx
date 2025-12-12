@@ -29,6 +29,7 @@ export default function TryPage() {
             tenantSlug={DEMO_TENANT_SLUG}
             agentName={AGENT_NAME}
             companyName={COMPANY_NAME}
+            source="try_demo"
           />
         </div>
 

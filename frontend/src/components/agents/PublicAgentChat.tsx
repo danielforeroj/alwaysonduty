@@ -18,11 +18,12 @@ type Props = {
   agentName: string;
   tenantSlug?: string;
   companyName?: string | null;
+  source?: string;
 };
 
 const generateId = () => crypto.randomUUID();
 
-export default function PublicAgentChat({ agentSlug, agentName, companyName, tenantSlug }: Props) {
+export default function PublicAgentChat({ agentSlug, agentName, companyName, tenantSlug, source = "public_agent" }: Props) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -133,6 +134,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName, ten
           contextKey={contextKey}
           agentSlug={agentSlug}
           tenantSlug={tenantSlug}
+          source={source}
           onVerified={(token, _id) => {
             setUnlockToken(token);
             setShowGate(false);
