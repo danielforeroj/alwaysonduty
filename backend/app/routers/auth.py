@@ -4,6 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.models.user import User
 from app.schemas.auth import (
     AuthResponse,
     LoginRequest,
@@ -98,7 +99,15 @@ def request_password_reset(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
-    user, token = auth_service.request_password_reset(db, payload.email)
+    normalized_email = payload.email.strip().lower()
+    user = db.query(User).filter(User.email == normalized_email).first()
+    if user and user.role == "SUPER_ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Super admin password resets must be requested at /super-admin/forgot-password.",
+        )
+
+    user, token = auth_service.request_password_reset(db, normalized_email)
     if user and token:
         background_tasks.add_task(
             email_service.send_password_reset_email, user, token, settings.frontend_base_url
