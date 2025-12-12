@@ -41,7 +41,16 @@ export default function UsersPage() {
       const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Failed to load users");
+      if (!res.ok) {
+        let detail = `Failed to load users (status ${res.status})`;
+        try {
+          const data = await res.json();
+          if (data?.detail) detail = `${data.detail} (status ${res.status})`;
+        } catch {
+          // ignore JSON parse issues
+        }
+        throw new Error(detail);
+      }
       const data = await res.json();
       setUsers(data.items || []);
     } catch (err: any) {

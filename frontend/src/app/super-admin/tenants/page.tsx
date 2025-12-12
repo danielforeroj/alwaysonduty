@@ -52,7 +52,16 @@ export default function TenantsPage() {
       const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Failed to load tenants");
+      if (!res.ok) {
+        let detail = `Failed to load tenants (status ${res.status})`;
+        try {
+          const data = await res.json();
+          if (data?.detail) detail = `${data.detail} (status ${res.status})`;
+        } catch {
+          // ignore json parse errors
+        }
+        throw new Error(detail);
+      }
       setData(await res.json());
     } catch (err: any) {
       setError(err.message || "Unable to load tenants");

@@ -23,7 +23,7 @@ class OverviewMetrics(BaseModel):
 class TenantListItem(BaseModel):
     id: UUID
     contact_name: Optional[str] = None
-    contact_email: Optional[EmailStr] = None
+    contact_email: Optional[str] = None
     name: str
     slug: str
     plan_type: str
@@ -49,7 +49,7 @@ class TenantListResponse(BaseModel):
 class TenantDetail(TenantListItem):
     total_conversations: int = 0
     total_messages: int = 0
-    primary_contact_email: Optional[EmailStr] = None
+    primary_contact_email: Optional[str] = None
 
 
 class TenantUpdateRequest(BaseModel):
@@ -77,7 +77,7 @@ class CreateTenantRequest(BaseModel):
 
 class UserListItem(BaseModel):
     id: UUID
-    email: EmailStr
+    email: str
     role: str
     tenant_id: UUID
     tenant_name: str

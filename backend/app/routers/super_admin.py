@@ -114,70 +114,76 @@ def list_tenants(
     db: Session = Depends(get_db),
     _: User = Depends(require_super_admin),
 ):
-    query = db.query(Tenant)
-    if search:
-        term = f"%{search.lower()}%"
-        query = query.filter(func.lower(Tenant.name).like(term) | func.lower(Tenant.slug).like(term))
-    if status:
-        query = query.filter(Tenant.billing_status == status)
-    if plan:
-        query = query.filter(Tenant.plan_type == plan)
-    if special is not None:
-        query = query.filter(Tenant.is_special_permissioned == special)
+    try:
+        query = db.query(Tenant)
+        if search:
+            term = f"%{search.lower()}%"
+            query = query.filter(func.lower(Tenant.name).like(term) | func.lower(Tenant.slug).like(term))
+        if status:
+            query = query.filter(Tenant.billing_status == status)
+        if plan:
+            query = query.filter(Tenant.plan_type == plan)
+        if special is not None:
+            query = query.filter(Tenant.is_special_permissioned == special)
 
-    items, total = _paginate(query.order_by(Tenant.created_at.desc()), page, page_size)
-    tenant_ids = [t.id for t in items]
+        items, total = _paginate(query.order_by(Tenant.created_at.desc()), page, page_size)
+        tenant_ids = [t.id for t in items]
 
-    agent_counts = {
-        tenant_id: count
-        for tenant_id, count in db.query(Agent.tenant_id, func.count(Agent.id))
-        .filter(Agent.tenant_id.in_(tenant_ids))
-        .group_by(Agent.tenant_id)
-        .all()
-    }
-
-    user_counts = {
-        tenant_id: count
-        for tenant_id, count in db.query(User.tenant_id, func.count(User.id))
-        .filter(User.tenant_id.in_(tenant_ids))
-        .group_by(User.tenant_id)
-        .all()
-    }
-
-    primary_contacts: dict[UUID, tuple[Optional[str], Optional[str]]] = {}
-    if tenant_ids:
-        for u in (
-            db.query(User)
-            .filter(User.tenant_id.in_(tenant_ids))
-            .order_by(User.tenant_id, User.created_at.asc())
+        agent_counts = {
+            tenant_id: count
+            for tenant_id, count in db.query(Agent.tenant_id, func.count(Agent.id))
+            .filter(Agent.tenant_id.in_(tenant_ids))
+            .group_by(Agent.tenant_id)
             .all()
-        ):
-            if u.tenant_id not in primary_contacts:
-                primary_contacts[u.tenant_id] = (u.name, u.email)
+        }
 
-    payload_items = [
-        TenantListItem(
-            id=t.id,
-            contact_name=primary_contacts.get(t.id, (None, None))[0],
-            contact_email=primary_contacts.get(t.id, (None, None))[1],
-            name=t.name,
-            slug=t.slug,
-            plan_type=t.plan_type,
-            billing_status=t.billing_status,
-            trial_mode=t.trial_mode,
-            trial_ends_at=t.trial_ends_at,
-            is_special_permissioned=t.is_special_permissioned,
-            trial_days_override=t.trial_days_override,
-            card_required=t.card_required,
-            created_at=t.created_at,
-            agent_count=agent_counts.get(t.id, 0),
-            user_count=user_counts.get(t.id, 0),
+        user_counts = {
+            tenant_id: count
+            for tenant_id, count in db.query(User.tenant_id, func.count(User.id))
+            .filter(User.tenant_id.in_(tenant_ids))
+            .group_by(User.tenant_id)
+            .all()
+        }
+
+        primary_contacts: dict[UUID, tuple[Optional[str], Optional[str]]] = {}
+        if tenant_ids:
+            for u in (
+                db.query(User)
+                .filter(User.tenant_id.in_(tenant_ids))
+                .order_by(User.tenant_id, User.created_at.asc())
+                .all()
+            ):
+                if u.tenant_id not in primary_contacts:
+                    primary_contacts[u.tenant_id] = (u.name, u.email)
+
+        payload_items = [
+            TenantListItem(
+                id=t.id,
+                contact_name=primary_contacts.get(t.id, (None, None))[0],
+                contact_email=primary_contacts.get(t.id, (None, None))[1],
+                name=t.name,
+                slug=t.slug,
+                plan_type=t.plan_type,
+                billing_status=t.billing_status,
+                trial_mode=t.trial_mode,
+                trial_ends_at=t.trial_ends_at,
+                is_special_permissioned=t.is_special_permissioned,
+                trial_days_override=t.trial_days_override,
+                card_required=t.card_required,
+                created_at=t.created_at,
+                agent_count=agent_counts.get(t.id, 0),
+                user_count=user_counts.get(t.id, 0),
+            )
+            for t in items
+        ]
+        return TenantListResponse(
+            items=payload_items, pagination={"total": total, "page": page, "page_size": page_size}
         )
-        for t in items
-    ]
-    return TenantListResponse(
-        items=payload_items, pagination={"total": total, "page": page, "page_size": page_size}
-    )
+    except Exception:
+        logger.exception("Failed to list tenants")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to list tenants"
+        )
 
 
 @router.post("/tenants", response_model=TenantDetail, status_code=status.HTTP_201_CREATED)
@@ -333,32 +339,45 @@ def list_users(
     db: Session = Depends(get_db),
     _: User = Depends(require_super_admin),
 ):
-    query = db.query(User, Tenant.name.label("tenant_name")).join(Tenant, Tenant.id == User.tenant_id)
-    if search:
-        term = f"%{search.lower()}%"
-        query = query.filter(func.lower(User.email).like(term))
-    if role:
-        query = query.filter(User.role == role)
-    if tenant_id:
-        query = query.filter(User.tenant_id == tenant_id)
+    try:
+        query = db.query(User, Tenant.name.label("tenant_name")).join(Tenant, Tenant.id == User.tenant_id)
+        if search:
+            term = f"%{search.lower()}%"
+            query = query.filter(func.lower(User.email).like(term))
+        if role:
+            query = query.filter(User.role == role)
+        if tenant_id:
+            query = query.filter(User.tenant_id == tenant_id)
 
-    total = query.count()
-    rows = query.order_by(User.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
-    items = [
-        UserListItem(
-            id=row.User.id,
-            email=row.User.email,
-            role=row.User.role,
-            tenant_id=row.User.tenant_id,
-            tenant_name=row.tenant_name,
-            is_active=row.User.is_active,
-            created_at=row.User.created_at,
-            last_login=row.User.last_login,
-            email_verified=row.User.email_verified,
+        total = query.count()
+        rows = (
+            query.order_by(User.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
         )
-        for row in rows
-    ]
-    return UserListResponse(items=items, pagination={"total": total, "page": page, "page_size": page_size})
+        items = [
+            UserListItem(
+                id=row.User.id,
+                email=row.User.email,
+                role=row.User.role,
+                tenant_id=row.User.tenant_id,
+                tenant_name=row.tenant_name,
+                is_active=row.User.is_active,
+                created_at=row.User.created_at,
+                last_login=row.User.last_login,
+                email_verified=row.User.email_verified,
+            )
+            for row in rows
+        ]
+        return UserListResponse(
+            items=items, pagination={"total": total, "page": page, "page_size": page_size}
+        )
+    except Exception:
+        logger.exception("Failed to list users")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to list users"
+        )
 
 
 @router.get("/users/{user_id}", response_model=UserListItem)
