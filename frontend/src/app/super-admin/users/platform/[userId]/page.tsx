@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { buildApiUrl } from "../../utils/api";
+import { buildApiUrl } from "../../../utils/api";
 
 type UserDetail = {
   id: string;
