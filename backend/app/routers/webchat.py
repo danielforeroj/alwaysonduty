@@ -1,13 +1,16 @@
 from typing import Optional
+from datetime import datetime
 
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 
 from app.models.agent import Agent
+from app.models.customer import Customer
 from app.models.tenant import Tenant
 from app.services import ai_service, conversation_service, customer_service
 from app.services.tenant_service import get_tenant_by_slug
+from app.utils import security
 from app.utils.dependencies import get_db
 
 router = APIRouter()
@@ -19,6 +22,7 @@ class WebChatRequest(BaseModel):
     channel: str = "web"
     session_id: str
     text: str
+    end_user_token: Optional[str] = None
 
 
 @router.post("/send")
@@ -50,9 +54,23 @@ def send_message(payload: WebChatRequest, db: Session = Depends(get_db)):
 
         agent_type = "customer_service"
 
-    customer = customer_service.get_or_create_customer(
-        db, tenant_id=tenant.id, channel=payload.channel, external_id=payload.session_id
-    )
+    customer = None
+    if payload.end_user_token:
+        data = security.decode_token(payload.end_user_token)
+        if not data or data.get("tenant_id") != str(tenant.id):
+            raise HTTPException(status_code=401, detail="Invalid end-user token")
+        customer = db.query(Customer).filter_by(id=data.get("customer_id")).first()
+        if not customer:
+            raise HTTPException(status_code=401, detail="Customer not found")
+
+    if not customer:
+        customer = customer_service.get_or_create_customer(
+            db, tenant_id=tenant.id, channel=payload.channel, external_id=payload.session_id
+        )
+
+    customer.last_seen_at = datetime.utcnow()
+    db.add(customer)
+    db.commit()
 
     conversation = conversation_service.create_conversation(
         db, tenant_id=tenant.id, customer_id=customer.id, channel=payload.channel, agent_type=agent_type

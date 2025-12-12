@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { useCopy } from "@/lib/copy";
+import EndUserGate from "@/components/chat/EndUserGate";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -13,27 +14,31 @@ type ChatMessage = {
 };
 
 type Props = {
-  agentSlug: string;
+  agentSlug?: string;
   agentName: string;
+  tenantSlug?: string;
   companyName?: string | null;
 };
 
 const generateId = () => crypto.randomUUID();
 
-export default function PublicAgentChat({ agentSlug, agentName, companyName }: Props) {
+export default function PublicAgentChat({ agentSlug, agentName, companyName, tenantSlug }: Props) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unlockToken, setUnlockToken] = useState<string | null>(null);
+  const [showGate, setShowGate] = useState(true);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const t = useCopy().publicAgent.chat;
 
-  const storageKey = useMemo(() => `on_duty_session_id:${agentSlug}`, [agentSlug]);
+  const contextKey = agentSlug || tenantSlug || "public";
+  const storageKey = useMemo(() => `on_duty_session_id:${contextKey}`, [contextKey]);
 
   useEffect(() => {
-    if (!API_BASE) {
+    if (!API_BASE || (!agentSlug && !tenantSlug)) {
       setError(t.error);
       return;
     }
@@ -61,7 +66,7 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
   }, [input]);
 
   const sendMessage = async () => {
-    if (!input.trim() || loading || !sessionId || !API_BASE) return;
+    if (!input.trim() || loading || !sessionId || !API_BASE || !unlockToken) return;
     setError(null);
     const text = input.trim();
     const userMsg: ChatMessage = { id: generateId(), role: "user", text };
@@ -80,9 +85,11 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           agent_slug: agentSlug,
+          tenant_slug: tenantSlug,
           channel: "web",
           session_id: sessionId,
           text,
+          end_user_token: unlockToken,
         }),
         signal: controller.signal,
       });
@@ -121,6 +128,17 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
 
   return (
     <div className="flex h-full min-h-[60vh] flex-col gap-4">
+      {showGate && (
+        <EndUserGate
+          contextKey={contextKey}
+          agentSlug={agentSlug}
+          tenantSlug={tenantSlug}
+          onVerified={(token, _id) => {
+            setUnlockToken(token);
+            setShowGate(false);
+          }}
+        />
+      )}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-500">{t.heading}</p>
@@ -180,11 +198,11 @@ export default function PublicAgentChat({ agentSlug, agentName, companyName }: P
           placeholder={t.placeholder}
           rows={1}
           className="min-h-[2.75rem] max-h-24 flex-1 resize-none overflow-y-auto rounded-xl border border-slate-200 px-3 py-2 text-sm leading-6 focus:border-slate-400 focus:outline-none"
-          disabled={loading || (!!error && !API_BASE)}
+          disabled={loading || (!!error && !API_BASE) || !unlockToken}
         />
         <button
           onClick={sendMessage}
-          disabled={loading || !input.trim() || !sessionId || !API_BASE}
+          disabled={loading || !input.trim() || !sessionId || !API_BASE || !unlockToken}
           className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? t.sending : t.send}
