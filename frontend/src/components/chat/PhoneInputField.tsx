@@ -42,10 +42,13 @@ export default function PhoneInputField({
   const [{ country, national }, setParsed] = useState(() =>
     findCountryFromValue(value)
   );
+  const [userInteracted, setUserInteracted] = useState(false);
   const [search, setSearch] = useState("");
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const valueRef = useRef(value);
 
   useEffect(() => {
+    valueRef.current = value;
     if (!value) return;
     setParsed(findCountryFromValue(value));
   }, [value]);
@@ -57,14 +60,13 @@ export default function PhoneInputField({
       .then((data) => {
         const iso = data?.country_code?.toLowerCase();
         const found = COUNTRY_DIAL_CODES.find((c) => c.iso2 === iso);
-        if (found) {
-          setParsed({ country: found, national: "" });
-          onChange(found.dialCode);
+        if (found && !userInteracted && !valueRef.current?.trim()) {
+          updateValue(found, "", false);
         }
       })
       .catch(() => undefined);
     return () => controller.abort();
-  }, [onChange]);
+  }, [onChange, userInteracted]);
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
@@ -89,7 +91,14 @@ export default function PhoneInputField({
     );
   }, [search]);
 
-  const updateValue = (nextCountry: CountryDialCode, nextNational: string) => {
+  const updateValue = (
+    nextCountry: CountryDialCode,
+    nextNational: string,
+    userInitiated = true
+  ) => {
+    if (userInitiated) {
+      setUserInteracted(true);
+    }
     const formattedNational = nextNational.replace(/[^0-9\s]/g, "");
     setParsed({ country: nextCountry, national: formattedNational });
     const joined = `${nextCountry.dialCode} ${formattedNational}`.trim();
