@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from typing import Any, Dict, Optional
 
 import resend
@@ -10,6 +11,7 @@ from app.models.tenant import Tenant
 from app.models.user import User
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def _configure_resend_client() -> bool:
@@ -23,6 +25,7 @@ def _configure_resend_client() -> bool:
 
 def _send_email(to_email: str, subject: str, html: str, tags: Optional[Dict[str, str]] = None) -> None:
     if not _configure_resend_client():
+        logger.warning("Email not sent: RESEND_API_KEY or RESEND_FROM_EMAIL not configured.")
         return
 
     params: Dict[str, Any] = {
@@ -38,6 +41,7 @@ def _send_email(to_email: str, subject: str, html: str, tags: Optional[Dict[str,
     try:
         resend.Emails.send(params)  # type: ignore[attr-defined]
     except Exception:
+        logger.exception("Failed to send email via Resend")
         return
 
 
@@ -69,8 +73,10 @@ def send_email_verification_email(user: User, verification_token: str, frontend_
     _send_email(user.email, subject, html, tags={"category": "email_verification"})
 
 
-def send_password_reset_email(user: User, reset_token: str, frontend_base_url: str) -> None:
-    reset_url = f"{frontend_base_url}/reset-password?token={reset_token}"
+def send_password_reset_email(
+    user: User, reset_token: str, frontend_base_url: str, path: str = "reset-password"
+) -> None:
+    reset_url = f"{frontend_base_url}/{path}?token={reset_token}"
     subject = "Reset your password for OnDuty"
     html = f"""
     <p>Hi {user.email},</p>
