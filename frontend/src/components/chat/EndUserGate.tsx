@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PhoneInputField from "./PhoneInputField";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -35,6 +36,7 @@ export default function EndUserGate({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [verificationToken, setVerificationToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +63,9 @@ export default function EndUserGate({
 
   const handleCollect = async () => {
     setError(null);
-    if (!firstName || !lastName || !email || !phone) {
+    const missing = !firstName || !lastName || !email || !phone;
+    setPhoneError(!phone ? "Please fill out this field." : null);
+    if (missing) {
       setError("Please fill out all fields.");
       return;
     }
@@ -158,15 +162,15 @@ export default function EndUserGate({
                 type="email"
               />
             </div>
-            <div>
-              <label className="text-xs text-slate-600">Phone (with country code)</label>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                placeholder="+1 555 123 4567"
-              />
-            </div>
+            <PhoneInputField
+              value={phone}
+              onChange={(val) => {
+                setPhone(val);
+                setPhoneError(null);
+              }}
+              error={phoneError || null}
+              placeholder="576 908 413"
+            />
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button
               onClick={handleCollect}
