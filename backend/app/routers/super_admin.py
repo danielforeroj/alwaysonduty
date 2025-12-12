@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.models.agent import Agent
 from app.models.conversation import Conversation
+from app.models.customer import Customer
 from app.models.message import Message
 from app.models.tenant import Tenant
 from app.models.user import User
@@ -20,6 +21,9 @@ from app.schemas.super_admin import (
     AgentListResponse,
     CreateTenantRequest,
     CreateUserRequest,
+    ChatUserDetail,
+    ChatUserListItem,
+    ChatUserListResponse,
     OverviewMetrics,
     TenantDetail,
     TenantListItem,
@@ -145,22 +149,33 @@ def list_tenants(
             .all()
         }
 
-        primary_contacts: dict[UUID, tuple[Optional[str], Optional[str]]] = {}
+        owners: dict[UUID, Optional[User]] = {}
         if tenant_ids:
             for u in (
                 db.query(User)
-                .filter(User.tenant_id.in_(tenant_ids))
+                .filter(User.tenant_id.in_(tenant_ids), User.role == "TENANT_ADMIN")
                 .order_by(User.tenant_id, User.created_at.asc())
                 .all()
             ):
-                if u.tenant_id not in primary_contacts:
-                    primary_contacts[u.tenant_id] = (u.name, u.email)
+                if u.tenant_id not in owners:
+                    owners[u.tenant_id] = u
+
+            missing_owner_ids = [tid for tid in tenant_ids if tid not in owners]
+            if missing_owner_ids:
+                for u in (
+                    db.query(User)
+                    .filter(User.tenant_id.in_(missing_owner_ids))
+                    .order_by(User.tenant_id, User.created_at.asc())
+                    .all()
+                ):
+                    if u.tenant_id not in owners:
+                        owners[u.tenant_id] = u
 
         payload_items = [
             TenantListItem(
                 id=t.id,
-                contact_name=primary_contacts.get(t.id, (None, None))[0],
-                contact_email=primary_contacts.get(t.id, (None, None))[1],
+                owner_name=(owners.get(t.id).name if owners.get(t.id) else None),
+                owner_email=(owners.get(t.id).email if owners.get(t.id) else None),
                 name=t.name,
                 slug=t.slug,
                 plan_type=t.plan_type,
@@ -253,8 +268,8 @@ def create_tenant_super_admin(
     detail.total_conversations = total_conversations
     detail.total_messages = total_messages
     detail.primary_contact_email = primary_user.email if primary_user else None
-    detail.contact_name = primary_user.name if primary_user else None
-    detail.contact_email = primary_user.email if primary_user else None
+    detail.owner_name = primary_user.name if primary_user else None
+    detail.owner_email = primary_user.email if primary_user else None
     return detail
 
 
@@ -282,8 +297,15 @@ def tenant_detail(
     )
 
     primary_user = (
-        db.query(User).filter(User.tenant_id == tenant_id).order_by(User.created_at.asc()).first()
+        db.query(User)
+        .filter(User.tenant_id == tenant_id, User.role == "TENANT_ADMIN")
+        .order_by(User.created_at.asc())
+        .first()
     )
+    if not primary_user:
+        primary_user = (
+            db.query(User).filter(User.tenant_id == tenant_id).order_by(User.created_at.asc()).first()
+        )
 
     detail = TenantDetail.from_orm(tenant)
     detail.agent_count = agent_count
@@ -291,8 +313,8 @@ def tenant_detail(
     detail.total_conversations = total_conversations
     detail.total_messages = total_messages
     detail.primary_contact_email = primary_user.email if primary_user else None
-    detail.contact_name = primary_user.name if primary_user else None
-    detail.contact_email = primary_user.email if primary_user else None
+    detail.owner_name = primary_user.name if primary_user else None
+    detail.owner_email = primary_user.email if primary_user else None
     return detail
 
 
@@ -490,6 +512,158 @@ def update_user(
         last_login=user.last_login,
         email_verified=user.email_verified,
     )
+
+
+@router.get("/chat-users", response_model=ChatUserListResponse)
+def list_chat_users(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    tenant_id: Optional[UUID] = None,
+    search: Optional[str] = None,
+    source: Optional[str] = None,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_super_admin),
+):
+    try:
+        query = db.query(Customer, Tenant.name.label("tenant_name")).join(
+            Tenant, Tenant.id == Customer.tenant_id
+        )
+        if tenant_id:
+            query = query.filter(Customer.tenant_id == tenant_id)
+        if search:
+            term = f"%{search.lower()}%"
+            query = query.filter(func.lower(Customer.email).like(term))
+        if source:
+            query = query.filter(Customer.source == source)
+
+        total = query.count()
+        rows = (
+            query.order_by(Customer.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
+        )
+
+        customer_ids = [row.Customer.id for row in rows]
+        conversation_counts = {}
+        message_counts = {}
+        if customer_ids:
+            conversation_counts = {
+                cid: count
+                for cid, count in db.query(Conversation.customer_id, func.count(Conversation.id))
+                .filter(Conversation.customer_id.in_(customer_ids))
+                .group_by(Conversation.customer_id)
+                .all()
+            }
+            message_counts = {
+                cid: count
+                for cid, count in db.query(Conversation.customer_id, func.count(Message.id))
+                .join(Message, Message.conversation_id == Conversation.id)
+                .filter(Conversation.customer_id.in_(customer_ids))
+                .group_by(Conversation.customer_id)
+                .all()
+            }
+
+        items = [
+            ChatUserListItem(
+                id=row.Customer.id,
+                tenant_id=row.Customer.tenant_id,
+                tenant_name=row.tenant_name,
+                first_name=row.Customer.first_name,
+                last_name=row.Customer.last_name,
+                email=row.Customer.email,
+                phone=row.Customer.primary_phone,
+                source=row.Customer.source,
+                created_at=row.Customer.created_at,
+                last_seen_at=row.Customer.last_seen_at,
+                total_conversations=conversation_counts.get(row.Customer.id, 0),
+                total_messages=message_counts.get(row.Customer.id, 0),
+            )
+            for row in rows
+        ]
+        return ChatUserListResponse(
+            items=items, pagination={"total": total, "page": page, "page_size": page_size}
+        )
+    except Exception:
+        logger.exception("Failed to list chat users")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list chat users",
+        )
+
+
+@router.get("/chat-users/{chat_user_id}", response_model=ChatUserDetail)
+def get_chat_user(
+    chat_user_id: UUID,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_super_admin),
+):
+    try:
+        row = (
+            db.query(Customer, Tenant.name.label("tenant_name"))
+            .join(Tenant, Tenant.id == Customer.tenant_id)
+            .filter(Customer.id == chat_user_id)
+            .first()
+        )
+        if not row:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat user not found")
+
+        conversations = (
+            db.query(
+                Conversation.id,
+                Conversation.started_at,
+                Conversation.agent_type,
+                Conversation.agent_id,
+                Agent.name.label("agent_name"),
+                func.count(Message.id).label("message_count"),
+                func.max(Message.created_at).label("last_message_at"),
+            )
+            .outerjoin(Agent, Agent.id == Conversation.agent_id)
+            .outerjoin(Message, Message.conversation_id == Conversation.id)
+            .filter(Conversation.customer_id == chat_user_id)
+            .group_by(
+                Conversation.id,
+                Conversation.started_at,
+                Conversation.agent_type,
+                Conversation.agent_id,
+                Agent.name,
+            )
+            .order_by(Conversation.started_at.desc())
+            .all()
+        )
+
+        message_total = sum(conv.message_count or 0 for conv in conversations)
+
+        return ChatUserDetail(
+            id=row.Customer.id,
+            tenant_id=row.Customer.tenant_id,
+            tenant_name=row.tenant_name,
+            first_name=row.Customer.first_name,
+            last_name=row.Customer.last_name,
+            email=row.Customer.email,
+            phone=row.Customer.primary_phone,
+            source=row.Customer.source,
+            created_at=row.Customer.created_at,
+            last_seen_at=row.Customer.last_seen_at,
+            total_conversations=len(conversations),
+            total_messages=message_total,
+            conversations=[
+                {
+                    "id": conv.id,
+                    "agent_name": conv.agent_name,
+                    "agent_type": conv.agent_type,
+                    "created_at": conv.started_at,
+                    "message_count": conv.message_count or 0,
+                    "last_message_at": conv.last_message_at,
+                }
+                for conv in conversations
+            ],
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Failed to load chat user")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to load chat user")
 
 
 @router.get("/agents", response_model=AgentListResponse)

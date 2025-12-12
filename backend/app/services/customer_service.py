@@ -32,6 +32,56 @@ def get_or_create_customer(db: Session, tenant_id, channel: str, external_id: st
         db.refresh(identity)
     return customer
 
+
+def get_or_create_customer_by_email(
+    db: Session,
+    tenant_id,
+    email: str,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    phone: Optional[str] = None,
+    source: Optional[str] = None,
+) -> Customer:
+    customer = (
+        db.query(Customer)
+        .filter(Customer.tenant_id == tenant_id, Customer.email == email)
+        .first()
+    )
+    if customer:
+        updated = False
+        if first_name and customer.first_name != first_name:
+            customer.first_name = first_name
+            updated = True
+        if last_name and customer.last_name != last_name:
+            customer.last_name = last_name
+            updated = True
+        if phone and customer.primary_phone != phone:
+            customer.primary_phone = phone
+            updated = True
+        if source and customer.source != source:
+            customer.source = source
+            updated = True
+        if updated:
+            customer.full_name = f"{customer.first_name or ''} {customer.last_name or ''}".strip() or customer.full_name
+            db.add(customer)
+            db.commit()
+            db.refresh(customer)
+        return customer
+
+    customer = Customer(
+        tenant_id=tenant_id,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        primary_phone=phone,
+        source=source,
+    )
+    customer.full_name = f"{first_name or ''} {last_name or ''}".strip() or None
+    db.add(customer)
+    db.commit()
+    db.refresh(customer)
+    return customer
+
 def list_customers(db: Session, tenant_id, page: int = 1, page_size: int = 20):
     offset = (page - 1) * page_size
     return (

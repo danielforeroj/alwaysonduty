@@ -7,6 +7,7 @@ from fastapi import BackgroundTasks
 
 from app.config import get_settings
 from app.models.agent import Agent
+from app.models.customer import Customer
 from app.models.tenant import Tenant
 from app.models.user import User
 
@@ -157,6 +158,18 @@ def send_suspicious_activity_email(user: User, tenant: Tenant, details: str) -> 
     <p>— The OnDuty Team</p>
     """
     _send_email(user.email, subject, html, tags={"category": "suspicious_activity"})
+
+
+def send_end_user_verification_code(customer: Customer, code: str) -> None:
+    subject = "Your OnDuty verification code"
+    greeting = customer.first_name or customer.full_name or "there"
+    html = f"""
+    <p>Hi {greeting},</p>
+    <p>Your verification code for chatting with an OnDuty agent is:</p>
+    <p style=\"font-size: 24px; font-weight: bold; letter-spacing: 6px;\">{code}</p>
+    <p>This code expires in 15 minutes. If you did not request it, you can ignore this email.</p>
+    """
+    _send_email(customer.email, subject, html, tags={"category": "end_user_verification"})
 
 
 def send_agent_configuration_email(user: User, tenant: Tenant, agent: Agent) -> None:
