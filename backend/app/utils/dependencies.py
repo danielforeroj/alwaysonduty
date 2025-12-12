@@ -37,9 +37,20 @@ def get_current_user(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is inactive")
+
     tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
     if not tenant:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tenant not found")
 
     user.tenant = tenant  # type: ignore
     return user
+
+
+def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "SUPER_ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions",
+        )
+    return current_user
