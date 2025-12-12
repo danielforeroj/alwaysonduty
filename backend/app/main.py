@@ -1,7 +1,10 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth, billing, conversations, customers, dashboard, health, webchat, agents
+from app.routers import auth, billing, conversations, customers, dashboard, health, super_admin, webchat, agents
+from app.services.super_admin_seed import ensure_super_admins
 
 app = FastAPI(title="OnDuty API")
 
@@ -21,6 +24,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.on_event("startup")
+async def startup_event():
+    try:
+        ensure_super_admins()
+    except Exception:
+        logging.getLogger(__name__).exception("Failed to seed super admin users")
+
 app.include_router(health.router)
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(billing.router, prefix="/api/billing", tags=["billing"])
@@ -29,6 +40,7 @@ app.include_router(conversations.router, prefix="/api/conversations", tags=["con
 app.include_router(customers.router, prefix="/api/customers", tags=["customers"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
+app.include_router(super_admin.router, prefix="/api/super-admin", tags=["super-admin"])
 
 
 @app.get("/")
