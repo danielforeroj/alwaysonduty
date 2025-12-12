@@ -1,7 +1,5 @@
 "use client";
-
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 
@@ -19,6 +17,8 @@ type Tenant = {
   trial_days_override?: number | null;
   card_required?: boolean | null;
   created_at: string;
+  agent_count?: number;
+  user_count?: number;
 };
 
 type Pagination = { total: number; page: number; page_size: number };
@@ -31,6 +31,25 @@ export default function TenantsPage() {
   const [data, setData] = useState<TenantResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newPlan, setNewPlan] = useState("starter");
+  const [newTrialDays, setNewTrialDays] = useState<number | "">("");
+  const [newSpecial, setNewSpecial] = useState(true);
+  const [newCardRequired, setNewCardRequired] = useState(false);
+
+  const loadTenants = useCallback(async () => {
+    if (!API_BASE || !token) return;
+    try {
+      const query = search ? `?search=${encodeURIComponent(search)}` : "";
+      const res = await fetch(`${API_BASE}/api/super-admin/tenants${query}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to load tenants");
+      setData(await res.json());
+    } catch (err: any) {
+      setError(err.message || "Unable to load tenants");
+    }
+  }, [API_BASE, token, search]);
 
   useEffect(() => {
     if (!loading && (!token || user?.role !== "SUPER_ADMIN")) {
@@ -39,21 +58,35 @@ export default function TenantsPage() {
   }, [loading, router, token, user?.role]);
 
   useEffect(() => {
-    const load = async () => {
-      if (!API_BASE || !token) return;
-      try {
-        const query = search ? `?search=${encodeURIComponent(search)}` : "";
-        const res = await fetch(`${API_BASE}/api/super-admin/tenants${query}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Failed to load tenants");
-        setData(await res.json());
-      } catch (err: any) {
-        setError(err.message || "Unable to load tenants");
-      }
-    };
-    load();
-  }, [search, token]);
+    loadTenants();
+  }, [loadTenants]);
+
+  const createTenant = async () => {
+    if (!API_BASE || !token || !newName) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/super-admin/tenants`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: newName,
+          plan_type: newPlan,
+          trial_days_override: newTrialDays || null,
+          is_special_permissioned: newSpecial,
+          card_required: newCardRequired,
+          trial_mode: "no_card",
+          billing_status: "trial",
+        }),
+      });
+      if (!res.ok) throw new Error("Unable to create tenant");
+      setNewName("");
+      setNewTrialDays("");
+      setNewSpecial(true);
+      setNewCardRequired(false);
+      await loadTenants();
+    } catch (err: any) {
+      setError(err.message || "Unable to create tenant");
+    }
+  };
 
   if (!token) return null;
 
@@ -74,6 +107,56 @@ export default function TenantsPage() {
 
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-800">{error}</div>}
 
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Create tenant</h2>
+        <div className="mt-3 grid gap-3 md:grid-cols-5">
+          <input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Name"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          />
+          <select
+            value={newPlan}
+            onChange={(e) => setNewPlan(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+          >
+            <option value="starter">Starter</option>
+            <option value="growth">Growth</option>
+            <option value="premium">Premium</option>
+          </select>
+          <input
+            value={newTrialDays}
+            onChange={(e) => setNewTrialDays(e.target.value ? Number(e.target.value) : "")}
+            placeholder="Trial days"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            type="number"
+          />
+          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+            <input
+              type="checkbox"
+              checked={newSpecial}
+              onChange={(e) => setNewSpecial(e.target.checked)}
+            />
+            Special
+          </label>
+          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+            <input
+              type="checkbox"
+              checked={newCardRequired}
+              onChange={(e) => setNewCardRequired(e.target.checked)}
+            />
+            Card required
+          </label>
+        </div>
+        <button
+          onClick={createTenant}
+          className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          Create tenant
+        </button>
+      </div>
+
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
           <thead className="bg-slate-50 dark:bg-slate-800/50">
@@ -82,19 +165,25 @@ export default function TenantsPage() {
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Slug</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Plan</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Status</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Agents</th>
+              <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Users</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Special</th>
               <th className="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-200">Created</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {data?.items?.map((tenant) => (
-              <tr key={tenant.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                <td className="px-4 py-3 font-medium text-blue-600 dark:text-blue-300">
-                  <Link href={`/super-admin/tenants/${tenant.id}`}>{tenant.name}</Link>
-                </td>
+              <tr
+                key={tenant.id}
+                onClick={() => router.push(`/super-admin/tenants/${tenant.id}`)}
+                className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              >
+                <td className="px-4 py-3 font-medium text-blue-600 dark:text-blue-300">{tenant.name}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.slug}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.plan_type}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.billing_status}</td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.agent_count ?? 0}</td>
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.user_count ?? 0}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{tenant.is_special_permissioned ? "Yes" : "No"}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">
                   {new Date(tenant.created_at).toLocaleDateString()}
@@ -103,7 +192,7 @@ export default function TenantsPage() {
             ))}
             {(!data || data.items.length === 0) && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={8} className="px-4 py-6 text-center text-slate-500">
                   No tenants found.
                 </td>
               </tr>

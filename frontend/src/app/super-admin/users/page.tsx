@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -141,8 +142,14 @@ export default function UsersPage() {
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {users.map((row) => (
-              <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.email}</td>
+              <tr
+                key={row.id}
+                onClick={() => router.push(`/super-admin/users/${row.id}`)}
+                className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              >
+                <td className="px-4 py-3 text-blue-600 dark:text-blue-300">
+                  <Link href={`/super-admin/users/${row.id}`}>{row.email}</Link>
+                </td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.role}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.tenant_name}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{row.is_active ? "Active" : "Inactive"}</td>

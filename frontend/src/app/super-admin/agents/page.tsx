@@ -72,7 +72,11 @@ export default function AgentsPage() {
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {agents.map((agent) => (
-              <tr key={agent.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <tr
+                key={agent.id}
+                onClick={() => router.push(`/super-admin/agents/${agent.id}`)}
+                className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              >
                 <td className="px-4 py-3 text-blue-600 dark:text-blue-300">{agent.name}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{agent.agent_type || "—"}</td>
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{agent.tenant_name}</td>

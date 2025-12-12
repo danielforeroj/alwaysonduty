@@ -18,6 +18,7 @@ from app.schemas.super_admin import (
     AgentDetail,
     AgentListItem,
     AgentListResponse,
+    CreateTenantRequest,
     CreateUserRequest,
     OverviewMetrics,
     TenantDetail,
@@ -30,6 +31,7 @@ from app.schemas.super_admin import (
     UserListResponse,
 )
 from app.services import auth_service, email_service
+from app.services.tenant_service import create_tenant as create_tenant_service
 from app.utils.dependencies import get_db, require_super_admin
 from app.utils.security import hash_password
 
@@ -124,8 +126,88 @@ def list_tenants(
         query = query.filter(Tenant.is_special_permissioned == special)
 
     items, total = _paginate(query.order_by(Tenant.created_at.desc()), page, page_size)
-    payload = [TenantListItem.from_orm(t) for t in items]
-    return TenantListResponse(items=payload, pagination={"total": total, "page": page, "page_size": page_size})
+    tenant_ids = [t.id for t in items]
+
+    agent_counts = {
+        tenant_id: count
+        for tenant_id, count in db.query(Agent.tenant_id, func.count(Agent.id))
+        .filter(Agent.tenant_id.in_(tenant_ids))
+        .group_by(Agent.tenant_id)
+        .all()
+    }
+
+    user_counts = {
+        tenant_id: count
+        for tenant_id, count in db.query(User.tenant_id, func.count(User.id))
+        .filter(User.tenant_id.in_(tenant_ids))
+        .group_by(User.tenant_id)
+        .all()
+    }
+
+    payload_items = [
+        TenantListItem(
+            id=t.id,
+            name=t.name,
+            slug=t.slug,
+            plan_type=t.plan_type,
+            billing_status=t.billing_status,
+            trial_mode=t.trial_mode,
+            trial_ends_at=t.trial_ends_at,
+            is_special_permissioned=t.is_special_permissioned,
+            trial_days_override=t.trial_days_override,
+            card_required=t.card_required,
+            created_at=t.created_at,
+            agent_count=agent_counts.get(t.id, 0),
+            user_count=user_counts.get(t.id, 0),
+        )
+        for t in items
+    ]
+    return TenantListResponse(
+        items=payload_items, pagination={"total": total, "page": page, "page_size": page_size}
+    )
+
+
+@router.post("/tenants", response_model=TenantDetail, status_code=status.HTTP_201_CREATED)
+def create_tenant_super_admin(
+    payload: CreateTenantRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_super_admin),
+):
+    tenant = create_tenant_service(
+        db=db,
+        name=payload.name,
+        plan_type=payload.plan_type,
+        slug=payload.slug,
+        trial_mode=payload.trial_mode,
+        billing_status=payload.billing_status or "trial",
+        is_special_permissioned=payload.is_special_permissioned,
+        trial_days_override=payload.trial_days_override,
+        card_required=payload.card_required,
+    )
+
+    agent_count = db.query(func.count(Agent.id)).filter(Agent.tenant_id == tenant.id).scalar() or 0
+    user_count = db.query(func.count(User.id)).filter(User.tenant_id == tenant.id).scalar() or 0
+    total_conversations = (
+        db.query(func.count(Conversation.id)).filter(Conversation.tenant_id == tenant.id).scalar() or 0
+    )
+    total_messages = (
+        db.query(func.count(Message.id))
+        .join(Conversation, Message.conversation_id == Conversation.id)
+        .filter(Conversation.tenant_id == tenant.id)
+        .scalar()
+        or 0
+    )
+    primary_user = (
+        db.query(User).filter(User.tenant_id == tenant.id).order_by(User.created_at.asc()).first()
+    )
+
+    detail = TenantDetail.from_orm(tenant)
+    detail.agent_count = agent_count
+    detail.user_count = user_count
+    detail.total_conversations = total_conversations
+    detail.total_messages = total_messages
+    detail.primary_contact_email = primary_user.email if primary_user else None
+    return detail
 
 
 @router.get("/tenants/{tenant_id}", response_model=TenantDetail)
@@ -151,11 +233,16 @@ def tenant_detail(
         or 0
     )
 
+    primary_user = (
+        db.query(User).filter(User.tenant_id == tenant_id).order_by(User.created_at.asc()).first()
+    )
+
     detail = TenantDetail.from_orm(tenant)
     detail.agent_count = agent_count
     detail.user_count = user_count
     detail.total_conversations = total_conversations
     detail.total_messages = total_messages
+    detail.primary_contact_email = primary_user.email if primary_user else None
     return detail
 
 
@@ -169,6 +256,15 @@ def update_tenant(
     tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
     if not tenant:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")
+
+    if payload.plan_type is not None:
+        tenant.plan_type = payload.plan_type
+
+    if payload.billing_status is not None:
+        tenant.billing_status = payload.billing_status
+
+    if payload.trial_mode is not None:
+        tenant.trial_mode = payload.trial_mode
 
     if payload.is_special_permissioned is not None:
         tenant.is_special_permissioned = payload.is_special_permissioned
@@ -219,6 +315,29 @@ def list_users(
         for row in rows
     ]
     return UserListResponse(items=items, pagination={"total": total, "page": page, "page_size": page_size})
+
+
+@router.get("/users/{user_id}", response_model=UserListItem)
+def get_user(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_super_admin),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
+    return UserListItem(
+        id=user.id,
+        email=user.email,
+        role=user.role,
+        tenant_id=user.tenant_id,
+        tenant_name=tenant.name if tenant else "",
+        is_active=user.is_active,
+        created_at=user.created_at,
+        last_login=user.last_login,
+        email_verified=user.email_verified,
+    )
 
 
 @router.post("/users", response_model=UserListItem, status_code=status.HTTP_201_CREATED)

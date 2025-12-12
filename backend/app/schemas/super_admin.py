@@ -32,6 +32,8 @@ class TenantListItem(BaseModel):
     trial_days_override: Optional[int] = None
     card_required: Optional[bool] = None
     created_at: datetime
+    agent_count: int = 0
+    user_count: int = 0
 
     class Config:
         orm_mode = True
@@ -43,16 +45,29 @@ class TenantListResponse(BaseModel):
 
 
 class TenantDetail(TenantListItem):
-    agent_count: int = 0
-    user_count: int = 0
     total_conversations: int = 0
     total_messages: int = 0
+    primary_contact_email: Optional[EmailStr] = None
 
 
 class TenantUpdateRequest(BaseModel):
+    plan_type: Optional[str] = None
+    billing_status: Optional[str] = None  # trial, active, paused, cancelled
+    trial_mode: Optional[str] = None
     is_special_permissioned: Optional[bool] = None
     trial_days_override: Optional[int] = None
     card_required: Optional[bool] = None
+
+
+class CreateTenantRequest(BaseModel):
+    name: str = Field(..., min_length=2)
+    plan_type: str = "starter"
+    slug: Optional[str] = None
+    trial_mode: Optional[str] = "no_card"
+    trial_days_override: Optional[int] = None
+    is_special_permissioned: bool = True
+    card_required: Optional[bool] = False
+    billing_status: Optional[str] = "trial"
 
 
 class UserListItem(BaseModel):
