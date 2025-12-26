@@ -192,7 +192,7 @@ const copy = {
     pricingSubtitle: "Start in minutes. 3-day free trial without a card, or 15 days when you add your card.",
     pricingPlans: [
       {
-        id: "basic",
+        id: "starter",
         name: "Basic",
         label: "For small teams getting started with AI support.",
         price: "$20 / month",
@@ -478,7 +478,7 @@ const copy = {
     pricingSubtitle: "Empieza en minutos. 3 días gratis sin tarjeta, o 15 días cuando agregas tu tarjeta.",
     pricingPlans: [
       {
-        id: "basic",
+        id: "starter",
         name: "Básico",
         label: "Para equipos pequeños que quieren empezar con soporte por IA.",
         price: "USD $20 / mes",
