@@ -63,7 +63,7 @@ class TenantUpdateRequest(BaseModel):
 
 class CreateTenantRequest(BaseModel):
     name: str = Field(..., min_length=2)
-    plan_type: str = "starter"
+    plan_type: str = "basic"
     slug: Optional[str] = None
     trial_mode: Optional[str] = "no_card"
     trial_days_override: Optional[int] = None

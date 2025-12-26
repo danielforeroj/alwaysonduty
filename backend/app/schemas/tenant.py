@@ -17,7 +17,7 @@ class TenantBase(BaseModel):
 class TenantCreate(BaseModel):
     name: str
     slug: str
-    plan_type: str = "starter"
+    plan_type: str = "basic"
     billing_status: Optional[str] = "trial"
     trial_mode: Optional[str] = None
     trial_ends_at: Optional[datetime] = None

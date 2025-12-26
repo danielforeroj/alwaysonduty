@@ -45,9 +45,9 @@ export const copy = {
       subheading: "Start free with a trial. Upgrade only when you’re ready.",
       tiers: [
         {
-          title: "Starter",
+          title: "Basic",
           copy: "Hosted web chat, CS agent, basic analytics.",
-          plan: "starter",
+          plan: "basic",
         },
         {
           title: "Growth",
@@ -145,9 +145,9 @@ export const copy = {
       subheading: "Comienza gratis con un trial y mejora cuando estés listo.",
       tiers: [
         {
-          title: "Starter",
+          title: "Basic",
           copy: "Chat web alojado, agente de soporte, analíticas básicas.",
-          plan: "starter",
+          plan: "basic",
         },
         {
           title: "Growth",
@@ -207,4 +207,3 @@ export function useCopy() {
   const { language } = useLanguage();
   return copy[language];
 }
-

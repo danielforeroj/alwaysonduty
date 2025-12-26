@@ -1,32 +1,50 @@
 "use client";
 
-import { FormEvent, Suspense, useMemo, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../components/providers/AuthProvider";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-type PlanType = "starter" | "growth" | "premium";
+type PlanType = "basic" | "growth" | "premium";
 type TrialMode = "with_card" | "no_card";
+
+function normalizePlanParam(plan: string | null): PlanType {
+  switch (plan) {
+    case "starter":
+    case "basic":
+      return "basic";
+    case "growth":
+      return "growth";
+    case "premium":
+      return "premium";
+    default:
+      return "basic";
+  }
+}
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setAuth } = useAuth();
   const initialPlan = useMemo<PlanType>(() => {
-    const plan = (searchParams?.get("plan") as PlanType | null) || "starter";
-    return ["starter", "growth", "premium"].includes(plan) ? plan : "starter";
+    const plan = searchParams?.get("plan");
+    return normalizePlanParam(plan);
   }, [searchParams]);
 
   const [form, setForm] = useState<{ name: string; business_name: string; email: string; password: string; plan_type: PlanType }>(
     { name: "", business_name: "", email: "", password: "", plan_type: initialPlan },
   );
-  const [trialMode, setTrialMode] = useState<TrialMode>("with_card");
+  const [trialMode, setTrialMode] = useState<TrialMode>("no_card");
   const [error, setError] = useState<string | null>(null);
   const [configError, setConfigError] = useState<string | null>(
     API_BASE ? null : "API base URL is not configured. Please set NEXT_PUBLIC_API_BASE_URL.",
   );
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setForm((prev) => ({ ...prev, plan_type: initialPlan }));
+  }, [initialPlan]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -135,7 +153,7 @@ function SignupForm() {
             value={form.plan_type}
             onChange={(e) => setForm({ ...form, plan_type: e.target.value as PlanType })}
           >
-            <option value="starter">Starter</option>
+            <option value="basic">Basic</option>
             <option value="growth">Growth</option>
             <option value="premium">Premium</option>
           </select>

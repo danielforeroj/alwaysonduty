@@ -126,12 +126,15 @@ export function AgentWizard({ mode, initialAgent }: AgentWizardProps) {
 
   const planDisplayLabel = (() => {
     const labelMap: Record<string, string> = {
-      starter: "Basic",
+      basic: "Basic",
       growth: "Growth",
       premium: "Premium",
     };
-    if (tenant?.plan_type && labelMap[tenant.plan_type]) {
-      return labelMap[tenant.plan_type];
+    if (tenant?.plan_type) {
+      const normalized = tenant.plan_type === "starter" ? "basic" : tenant.plan_type;
+      if (labelMap[normalized]) {
+        return labelMap[normalized];
+      }
     }
     return "Growth";
   })();

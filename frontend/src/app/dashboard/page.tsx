@@ -115,7 +115,7 @@ export default function DashboardPage() {
 
   const trialEnds = formatDate(effectiveMetrics.plan.trial_ends_at || null);
 
-  const planName = effectiveMetrics.plan.name ? effectiveMetrics.plan.name : "starter";
+  const planName = effectiveMetrics.plan.name ? effectiveMetrics.plan.name : "basic";
   const channelBreakdown = effectiveMetrics.breakdown.conversations_by_channel || [];
   const totalByChannel = channelBreakdown.reduce((acc, item) => acc + item.count, 0);
 

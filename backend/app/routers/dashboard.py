@@ -37,7 +37,9 @@ def get_dashboard_metrics(
 ):
     tenant = current_user.tenant
     logger.info("Dashboard metrics requested for tenant %s", tenant.id)
-    plan_type = (tenant.plan_type or "starter").lower()
+    plan_type = (tenant.plan_type or "basic").lower()
+    if plan_type == "starter":
+        plan_type = "basic"
     limits = get_plan_limits(plan_type)
 
     start_month = _start_of_current_month()

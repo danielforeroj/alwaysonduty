@@ -183,7 +183,7 @@ export const EMPTY_CLIENT_ANALYTICS: ClientAnalytics = {
 
 export const EMPTY_METRICS: DashboardMetrics = {
   plan: {
-    name: "starter",
+    name: "basic",
     billing_status: "trial",
     trial_ends_at: null,
     monthly_conversations_limit: 200,

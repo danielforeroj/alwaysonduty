@@ -38,7 +38,7 @@ def create_tenant(
         tenant = Tenant(
             name=name,
             slug=candidate,
-            plan_type=plan_type or "starter",
+            plan_type=plan_type or "basic",
             trial_mode=trial_mode,
             trial_ends_at=trial_ends_at,
             billing_status=billing_status,

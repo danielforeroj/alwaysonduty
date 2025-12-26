@@ -1,5 +1,5 @@
 PLAN_LIMITS = {
-    "starter": {
+    "basic": {
         "monthly_conversations_limit": 200,
         "brands_limit": 1,
         "seats_included": 1,
@@ -21,5 +21,7 @@ PLAN_LIMITS = {
 
 
 def get_plan_limits(plan_type: str):
-    normalized = (plan_type or "starter").lower()
-    return PLAN_LIMITS.get(normalized, PLAN_LIMITS["starter"])
+    normalized = (plan_type or "basic").lower()
+    if normalized == "starter":
+        normalized = "basic"
+    return PLAN_LIMITS.get(normalized, PLAN_LIMITS["basic"])
