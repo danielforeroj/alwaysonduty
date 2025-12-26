@@ -33,7 +33,7 @@ export default function TenantsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [newName, setNewName] = useState("");
-  const [newPlan, setNewPlan] = useState("starter");
+  const [newPlan, setNewPlan] = useState("basic");
   const [newTrialDays, setNewTrialDays] = useState<number | "">("");
   const [newSpecial, setNewSpecial] = useState(true);
   const [newCardRequired, setNewCardRequired] = useState(false);
@@ -169,7 +169,7 @@ export default function TenantsPage() {
             onChange={(e) => setNewPlan(e.target.value)}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
           >
-            <option value="starter">Starter</option>
+            <option value="basic">Basic</option>
             <option value="growth">Growth</option>
             <option value="premium">Premium</option>
           </select>

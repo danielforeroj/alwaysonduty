@@ -10,8 +10,8 @@ class SignupRequest(BaseModel):
     business_name: str
     email: EmailStr
     password: str
-    plan_type: str = "starter"
-    trial_mode: Optional[str] = "with_card"
+    plan_type: str = "basic"
+    trial_mode: Optional[str] = "no_card"
 
 
 class LoginRequest(BaseModel):

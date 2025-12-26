@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     demo_tenant_name: str = Field("OnDuty Demo", env="DEMO_TENANT_NAME")
     stripe_secret_key: Optional[str] = Field(None, env="STRIPE_SECRET_KEY")
     stripe_webhook_secret: Optional[str] = Field(None, env="STRIPE_WEBHOOK_SECRET")
-    stripe_price_starter: Optional[str] = Field(None, env="STRIPE_PRICE_STARTER")
+    stripe_price_basic: Optional[str] = Field(None, env=("STRIPE_PRICE_BASIC", "STRIPE_PRICE_STARTER"))
     stripe_price_growth: Optional[str] = Field(None, env="STRIPE_PRICE_GROWTH")
     stripe_price_premium: Optional[str] = Field(None, env="STRIPE_PRICE_PREMIUM")
     frontend_base_url: str = Field("http://localhost:3000", env="FRONTEND_BASE_URL")

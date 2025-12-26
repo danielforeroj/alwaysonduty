@@ -6,7 +6,7 @@ import { useAuth } from "../../components/providers/AuthProvider";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-type PlanType = "starter" | "growth" | "premium";
+type PlanType = "basic" | "growth" | "premium";
 
 const plans: Array<{
   id: PlanType;
@@ -15,7 +15,7 @@ const plans: Array<{
   limits: string[];
 }> = [
   {
-    id: "starter",
+    id: "basic",
     name: "Basic",
     price: "$20/mo",
     limits: ["200 conversations", "1 workspace", "1 brand/location", "1 admin seat"],
@@ -34,12 +34,12 @@ const plans: Array<{
   },
 ];
 
-const planOrder: Record<PlanType, number> = { starter: 0, growth: 1, premium: 2 };
+const planOrder: Record<PlanType, number> = { basic: 0, growth: 1, premium: 2 };
 
 function normalizeCurrentPlan(planType: string | undefined): PlanType | undefined {
   if (!planType) return undefined;
-  if (planType === "basic") return "starter";
-  if (planType === "starter" || planType === "growth" || planType === "premium") {
+  if (planType === "starter") return "basic";
+  if (planType === "basic" || planType === "growth" || planType === "premium") {
     return planType;
   }
   return undefined;

@@ -18,11 +18,18 @@ logger = logging.getLogger(__name__)
 
 def _get_price_id(plan_type: str, settings):
     mapping = {
-        "starter": settings.stripe_price_starter,
+        "basic": settings.stripe_price_basic,
         "growth": settings.stripe_price_growth,
         "premium": settings.stripe_price_premium,
+        "starter": settings.stripe_price_basic,
     }
     return mapping.get(plan_type)
+
+
+def _normalize_plan_type(plan_type: str | None) -> str:
+    if plan_type and plan_type.lower() == "starter":
+        return "basic"
+    return (plan_type or "basic").lower()
 
 
 def _validate_stripe_settings(settings, require_prices: bool = True) -> str | None:
@@ -30,8 +37,8 @@ def _validate_stripe_settings(settings, require_prices: bool = True) -> str | No
     if not settings.stripe_secret_key:
         missing.append("STRIPE_SECRET_KEY")
     if require_prices:
-        if not settings.stripe_price_starter:
-            missing.append("STRIPE_PRICE_STARTER")
+        if not settings.stripe_price_basic:
+            missing.append("STRIPE_PRICE_BASIC")
         if not settings.stripe_price_growth:
             missing.append("STRIPE_PRICE_GROWTH")
         if not settings.stripe_price_premium:
@@ -163,7 +170,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             primary_user = db.query(User).filter(User.tenant_id == tenant.id).order_by(User.id.asc()).first()
             if primary_user:
                 email_service.send_plan_subscription_email(
-                    primary_user, tenant, tenant.plan_type or "starter"
+                    primary_user, tenant, _normalize_plan_type(tenant.plan_type)
                 )
     elif event.get("type") == "invoice.payment_succeeded":
         invoice = event["data"]["object"]
@@ -183,7 +190,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                     email_service.send_renewal_notification_email(
                         primary_user,
                         tenant,
-                        tenant.plan_type or "starter",
+                        _normalize_plan_type(tenant.plan_type),
                         renewal_date=datetime.utcnow(),
                     )
 

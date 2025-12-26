@@ -115,11 +115,11 @@ export default function TenantDetailPage() {
               Plan
             </label>
             <select
-              defaultValue={tenant.plan_type}
+              defaultValue={tenant.plan_type === "starter" ? "basic" : tenant.plan_type}
               onChange={(e) => updateConfig({ plan_type: e.target.value })}
               className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
             >
-              <option value="starter">Starter</option>
+              <option value="basic">Basic</option>
               <option value="growth">Growth</option>
               <option value="premium">Premium</option>
             </select>

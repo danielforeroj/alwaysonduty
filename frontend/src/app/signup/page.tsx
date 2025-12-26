@@ -6,20 +6,20 @@ import { useAuth } from "../../components/providers/AuthProvider";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-type PlanType = "starter" | "growth" | "premium";
+type PlanType = "basic" | "growth" | "premium";
 type TrialMode = "with_card" | "no_card";
 
 function normalizePlanParam(plan: string | null): PlanType {
   switch (plan) {
-    case "basic":
     case "starter":
-      return "starter";
+    case "basic":
+      return "basic";
     case "growth":
       return "growth";
     case "premium":
       return "premium";
     default:
-      return "starter";
+      return "basic";
   }
 }
 
@@ -153,7 +153,7 @@ function SignupForm() {
             value={form.plan_type}
             onChange={(e) => setForm({ ...form, plan_type: e.target.value as PlanType })}
           >
-            <option value="starter">Starter</option>
+            <option value="basic">Basic</option>
             <option value="growth">Growth</option>
             <option value="premium">Premium</option>
           </select>
